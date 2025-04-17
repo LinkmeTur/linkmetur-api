@@ -19,7 +19,7 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  async findOne(id: number): Promise<User | string> {
+  async findOne(id: string): Promise<User | string> {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       return 'is not user';
@@ -27,11 +27,11 @@ export class UsersService {
     return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  update(id: string, updateUserDto: UpdateUserDto) {
     return this.userRepository.update(id, updateUserDto);
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} user`;
   }
 }
