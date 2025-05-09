@@ -1,20 +1,28 @@
+import { Corporation } from 'src/corporations/entities/corporation.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class User extends BaseEntity {
   @Column()
-  name: string;
+  nome: string;
 
   @Column()
   email: string;
 
   @Column()
-  password: string;
+  senha: string;
 
   @Column()
-  phone: string;
+  telefone: string;
 
   @Column()
-  role: number;
+  nivel: number;
+
+  @Column()
+  corpId: string;
+
+  @ManyToOne(() => Corporation, (corp) => corp.users)
+  @JoinColumn({ name: 'corpId' })
+  corp: Corporation;
 }

@@ -1,24 +1,45 @@
 import { BaseEntity } from 'src/database/entities/baseEntity';
-import { Entity, Column } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Entity, Column, OneToMany } from 'typeorm';
 
 @Entity()
 export class Corporation extends BaseEntity {
   @Column()
-  cnpj: number;
+  cnpj: string;
+
   @Column()
-  corporate_name: string;
+  razao_social: string;
+
   @Column()
-  trade_name: string;
+  natureza_juridica: string;
+
   @Column()
-  state_registration: number;
+  nome_fantasia: string;
+
   @Column()
-  share_capital: number;
+  pais: string;
+
   @Column()
-  size: string;
+  endereco: string;
+
   @Column()
-  registration_status_date: string;
+  data_inicio_atividade: string;
+
   @Column()
-  country: string;
+  cnae_fiscal_principal: string;
+
   @Column()
-  address: string;
+  cnae_fiscal_secundaria: string;
+
+  @Column()
+  telefone: string;
+
+  @Column()
+  email: string;
+
+  @Column()
+  socios: string;
+
+  @OneToMany(() => User, (user) => user.corp)
+  users: Array<User>;
 }
