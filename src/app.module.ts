@@ -1,21 +1,34 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
-import { TourismEnterpriseProfilesModule } from './tourism-enterprise-profiles/tourism-enterprise-profiles.module';
-import { ServiceSupplierProfilesModule } from './service-supplier-profiles/service-supplier-profiles.module';
+
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CorporationsModule } from './corporations/corporations.module';
+import { AuthenticationsModule } from './authentications/authentications.module';
+// import { ChatsModule } from './chats/chats.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: './database/database.sqlite',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      migrations: [],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      url: process.env.DATABASE_URL,
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: true,
+      dropSchema: false,
+      retryAttempts: 2,
+      retryDelay: 100,
+    }),
+
     UsersModule,
-    TourismEnterpriseProfilesModule,
-    ServiceSupplierProfilesModule,
+
+    CorporationsModule,
+
+    AuthenticationsModule,
+
+    // ChatsModule,
   ],
   controllers: [],
   providers: [],
