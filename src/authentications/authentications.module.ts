@@ -4,8 +4,9 @@ import { AuthenticationsController } from './authentications.controller';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
-import { JwtStrategy } from './sevices/JwtSrategy.service';
+// import { JwtStrategy } from './sevices/JwtSrategy.service';
 import { CorporationsModule } from 'src/corporations/corporations.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -13,11 +14,12 @@ import { CorporationsModule } from 'src/corporations/corporations.module';
     JwtModule.register({
       secret: process.env.SECRET,
     }),
+    HttpModule,
     UsersModule,
     CorporationsModule,
   ],
   controllers: [AuthenticationsController],
-  providers: [AuthenticationsService, JwtStrategy],
+  providers: [AuthenticationsService],
   exports: [AuthenticationsService],
 })
 export class AuthenticationsModule {}

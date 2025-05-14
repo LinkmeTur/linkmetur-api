@@ -48,7 +48,11 @@ export class CorporationsController {
 
   @Get('consulta-cnpj/:cnpj')
   consultCNPJ(@Param('cnpj') cnpj: string): Promise<any> {
-    console.log(cnpj);
     return this.corporationsService.consultaCNPJ(cnpj);
+  }
+
+  @Get('consulta-cep/:cep')
+  consultCEP(@Param('cep') cep: string): Promise<any> {
+    return this.corporationsService.consultaCep(cep);
   }
 }

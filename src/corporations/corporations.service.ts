@@ -28,7 +28,12 @@ export class CorporationsService {
   }
 
   async findOne(id: string): Promise<Corporation | string> {
-    const corp = await this.corporationRepository.findOneBy({ id });
+    const corp = await this.corporationRepository.findOne({
+      where: { id: id },
+      relations: {
+        users: true,
+      },
+    });
 
     if (!corp) {
       return `Is Corporation ${id} not found!`;
@@ -51,7 +56,7 @@ export class CorporationsService {
   async consultaCNPJ(cnpj: string): Promise<any> {
     try {
       const reponse = await firstValueFrom(
-        this.httpService.get(`https://api.cnpjs.dev/v1/${cnpj}`),
+        this.httpService.get(`https://publica.cnpj.ws/cnpj/${cnpj}`),
       );
 
       return reponse.data;
@@ -59,6 +64,22 @@ export class CorporationsService {
       if (error) {
         throw new HttpException(
           'Erro ao consultar CNPJ',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+  }
+
+  async consultaCep(cep: string): Promise<any> {
+    try {
+      const reponse = await firstValueFrom(
+        this.httpService.get(`https://brasilapi.com.br/api/cep/v2/${cep}`),
+      );
+      return reponse.data;
+    } catch (error) {
+      if (error) {
+        throw new HttpException(
+          'Erro ao consultar Cep',
           HttpStatus.BAD_REQUEST,
         );
       }

@@ -1,50 +1,82 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEmail,
+  ValidateIf,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class CreateCorporationDto {
-  @IsNotEmpty({ message: 'CNPJ é obrigatório' })
-  @IsString({ message: 'CNPJ deve ser uma string' })
+  @IsString({ message: 'O CNPJ deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'O CNPJ é obrigatório.' })
   cnpj: string;
 
-  @IsNotEmpty({ message: 'Razão Social é obrigatória' })
-  @IsString({ message: 'Razão Social deve ser uma string' })
+  @IsString({ message: 'A razão social deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'A razão social é obrigatória.' })
   razao_social: string;
 
-  @IsNotEmpty({ message: 'Natureza Jurídica é obrigatória' })
-  @IsString({ message: 'Natureza Jurídica deve ser uma string' })
+  @IsString({ message: 'A natureza jurídica deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'A natureza jurídica é obrigatória.' })
   natureza_juridica: string;
 
-  @IsNotEmpty({ message: 'Nome Fantasia é obrigatório' })
-  @IsString({ message: 'Nome Fantasia deve ser uma string' })
+  @IsString({ message: 'O nome fantasia deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'O nome fantasia é obrigatório.' })
   nome_fantasia: string;
 
-  @IsOptional() // Se o campo pode ser nulo ou não fornecido
-  pais: string;
-
-  @IsNotEmpty({ message: 'Endereço é obrigatório' })
-  @IsString({ message: 'Endereço deve ser uma string' })
-  endereco: string;
-
-  @IsNotEmpty({ message: 'Data de Início de Atividade é obrigatória' })
-  @IsString({ message: 'Data de Início de Atividade deve ser uma string' })
+  @IsString({ message: 'A data de início deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'A data de início da atividade é obrigatória.' })
   data_inicio_atividade: string;
 
-  @IsNotEmpty({ message: 'CNAE Fiscal Principal é obrigatório' })
-  @IsString({ message: 'CNAE Fiscal Principal deve ser uma string' })
+  @IsString({ message: 'O CNAE fiscal deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'O CNAE fiscal principal é obrigatório.' })
   cnae_fiscal_principal: string;
 
-  @IsOptional() // Se o campo pode ser nulo ou não fornecido
-  @IsString({ message: 'CNAE Fiscal Secundário deve ser uma string' })
-  cnae_fiscal_secundaria: string;
-
-  @IsNotEmpty({ message: 'Telefone é obrigatório' })
-  @IsString({ message: 'Telefone deve ser uma string' })
+  @IsString({ message: 'O telefone deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'O telefone é obrigatório.' })
   telefone: string;
 
-  @IsNotEmpty({ message: 'Email é obrigatório' })
-  @IsEmail({}, { message: 'Email inválido' })
+  @IsEmail({}, { message: 'O e-mail deve ser um endereço válido.' })
+  @IsNotEmpty({ message: 'O e-mail é obrigatório.' })
   email: string;
 
-  @IsNotEmpty({ message: 'Sócios é obrigatório' })
-  @IsString({ message: 'Sócios deve ser uma string' })
-  socios: string;
+  @IsString({ message: 'O CEP deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'O CEP é obrigatório.' })
+  cep: string;
+
+  @IsString({ message: 'O endereço deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'O endereço é obrigatório.' })
+  endereco: string;
+
+  @IsString({ message: 'A cidade deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'A cidade é obrigatória.' })
+  cidade: string;
+
+  @IsString({ message: 'O estado deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'O estado é obrigatório.' })
+  estado: string;
+
+  @IsString({ message: 'O país deve ser uma string válida.' })
+  @IsNotEmpty({ message: 'O país é obrigatório.' })
+  pais: string;
+
+  @IsString()
+  @IsNotEmpty()
+  localizacao: string;
+
+  @IsString()
+  @IsNotEmpty()
+  tipo: 'T' | 'P';
+
+  @IsString()
+  @IsOptional()
+  tags: string;
+
+  // Validação para garantir que apenas uma das opções seja preenchida
+  @IsOptional()
+  @ValidateIf((o: CreateCorporationDto) => !o.logo)
+  logo_url: string;
+
+  @IsOptional()
+  @ValidateIf((o: CreateCorporationDto) => !o.logo_url)
+  logo: Buffer;
 }

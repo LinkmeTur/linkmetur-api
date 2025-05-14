@@ -4,6 +4,12 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class User extends BaseEntity {
+  @Column({ nullable: true })
+  avatar_url: string;
+
+  @Column({ type: 'bytea', nullable: true })
+  avatar: Buffer;
+
   @Column()
   nome: string;
 

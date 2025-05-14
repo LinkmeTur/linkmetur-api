@@ -10,6 +10,8 @@ import {
   Min,
   Max,
   IsEnum,
+  IsOptional,
+  ValidateIf,
 } from 'class-validator';
 import { UserRole } from '../types/enuns/user-role.enum';
 
@@ -41,4 +43,11 @@ export class CreateUserDto {
   nivel: number; // Mantenha como number
   @IsNotEmpty()
   corpId: string;
+  @IsOptional()
+  @ValidateIf((o: CreateUserDto) => !o.avatar)
+  avatar_url: string;
+
+  @IsOptional()
+  @ValidateIf((o: CreateUserDto) => !o.avatar_url)
+  avatar: Buffer;
 }

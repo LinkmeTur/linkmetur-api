@@ -4,6 +4,12 @@ import { Entity, Column, OneToMany } from 'typeorm';
 
 @Entity()
 export class Corporation extends BaseEntity {
+  @Column({ nullable: true })
+  logo_url: string;
+
+  @Column({ type: 'bytea', nullable: true })
+  logo: Buffer;
+
   @Column()
   cnpj: string;
 
@@ -17,19 +23,16 @@ export class Corporation extends BaseEntity {
   nome_fantasia: string;
 
   @Column()
-  pais: string;
-
-  @Column()
-  endereco: string;
-
-  @Column()
   data_inicio_atividade: string;
 
   @Column()
   cnae_fiscal_principal: string;
 
   @Column()
-  cnae_fiscal_secundaria: string;
+  tipo: string;
+
+  @Column()
+  tags: string;
 
   @Column()
   telefone: string;
@@ -38,7 +41,22 @@ export class Corporation extends BaseEntity {
   email: string;
 
   @Column()
-  socios: string;
+  cep: string;
+
+  @Column()
+  endereco: string;
+
+  @Column()
+  cidade: string;
+
+  @Column()
+  estado: string;
+
+  @Column()
+  pais: string;
+
+  @Column()
+  localizacao: string;
 
   @OneToMany(() => User, (user) => user.corp)
   users: Array<User>;
