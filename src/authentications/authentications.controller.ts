@@ -13,8 +13,7 @@ import { AuthenticationsService } from './authentications.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CreateTwoFactorDto } from './dto/create-twofactor.dto';
-// import { CreateAuthenticationDto } from './dto/create-authentication.dto';
-// import { UpdateAuthenticationDto } from './dto/update-authentication.dto';
+
 @ApiBearerAuth('token')
 @ApiTags('authentications')
 @Controller('authentications')
@@ -22,6 +21,24 @@ export class AuthenticationsController {
   constructor(
     private readonly authenticationsService: AuthenticationsService,
   ) {}
+  @Post()
+  @ApiOperation({ summary: 'login' })
+  @ApiBody({
+    description: 'Autenticação de usuário',
+    examples: {
+      login: {
+        value: {
+          email: 'string',
+          senha: 'string',
+        },
+      },
+    },
+  })
+  signWithEmailAndPass(
+    @Body() data: { email: 'string'; senha: 'string' },
+  ): Promise<any> {
+    return this.authenticationsService.signin(data.email, data.senha);
+  }
 
   @Post('verificationTwoFactorCode')
   @UsePipes(new ValidationPipe())

@@ -31,6 +31,21 @@ export class UsersService {
     }
     return user;
   }
+  async findOneByEmailAndPass(
+    email: string,
+    senha: string,
+  ): Promise<User | string> {
+    const user = await this.userRepository.findOne({
+      where: { email, senha },
+      relations: {
+        corp: true,
+      },
+    });
+    if (!user) {
+      return 'is not user';
+    }
+    return user;
+  }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     return await this.userRepository.update(id, updateUserDto);

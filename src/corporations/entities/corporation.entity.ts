@@ -19,7 +19,7 @@ export class Corporation extends BaseEntity {
   @Column()
   natureza_juridica: string;
 
-  @Column()
+  @Column({ nullable: true })
   nome_fantasia: string;
 
   @Column()
@@ -31,7 +31,7 @@ export class Corporation extends BaseEntity {
   @Column()
   tipo: string;
 
-  @Column()
+  @Column({ nullable: true })
   tags: string;
 
   @Column()
@@ -45,6 +45,11 @@ export class Corporation extends BaseEntity {
 
   @Column()
   endereco: string;
+  @Column({ nullable: true })
+  numero: string;
+
+  @Column({ nullable: true })
+  bairro: string;
 
   @Column()
   cidade: string;

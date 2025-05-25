@@ -20,7 +20,7 @@ export class CreateCorporationDto {
   natureza_juridica: string;
 
   @IsString({ message: 'O nome fantasia deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'O nome fantasia é obrigatório.' })
+  @IsOptional()
   nome_fantasia: string;
 
   @IsString({ message: 'A data de início deve ser uma string válida.' })
@@ -46,6 +46,14 @@ export class CreateCorporationDto {
   @IsString({ message: 'O endereço deve ser uma string válida.' })
   @IsNotEmpty({ message: 'O endereço é obrigatório.' })
   endereco: string;
+
+  @IsString({ message: 'O endereço deve ser uma string válida.' })
+  @IsOptional()
+  numero: string;
+
+  @IsString({ message: 'O endereço deve ser uma string válida.' })
+  @IsOptional()
+  bairro: string;
 
   @IsString({ message: 'A cidade deve ser uma string válida.' })
   @IsNotEmpty({ message: 'A cidade é obrigatória.' })
