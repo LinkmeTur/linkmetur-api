@@ -5,7 +5,7 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CorporationsModule } from './corporations/corporations.module';
 import { AuthenticationsModule } from './authentications/authentications.module';
-// import { ChatsModule } from './chats/chats.module';
+import { ChatsModule } from './chats/chats.module';
 
 @Module({
   imports: [
@@ -28,7 +28,7 @@ import { AuthenticationsModule } from './authentications/authentications.module'
 
     AuthenticationsModule,
 
-    // ChatsModule,
+    ChatsModule,
   ],
   controllers: [],
   providers: [],

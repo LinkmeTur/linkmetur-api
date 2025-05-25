@@ -7,24 +7,24 @@ import {
 import { ChatsService } from './chats.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
+interface FindHistoryDto {
+  remetenteId: string;
+  destinatarioId: string;
+}
 
 @WebSocketGateway()
 export class ChatsGateway {
   constructor(private readonly chatsService: ChatsService) {}
 
   @SubscribeMessage('createChat')
-  create(@MessageBody() createChatDto: CreateChatDto) {
+  create(@MessageBody() createChatDto: CreateChatDto): Promise<any> {
     return this.chatsService.create(createChatDto);
   }
 
-  @SubscribeMessage('findAllChats')
-  findAll() {
-    return this.chatsService.findAll();
-  }
-
-  @SubscribeMessage('findOneChat')
-  findOne(@MessageBody() id: number) {
-    return this.chatsService.findOne(id);
+  @SubscribeMessage('findHistory')
+  findHistory(@MessageBody() body: FindHistoryDto): Promise<any> {
+    const { remetenteId, destinatarioId } = body;
+    return this.chatsService.findHistory(remetenteId, destinatarioId);
   }
 
   @SubscribeMessage('updateChat')
@@ -33,7 +33,7 @@ export class ChatsGateway {
   }
 
   @SubscribeMessage('removeChat')
-  remove(@MessageBody() id: number) {
-    return this.chatsService.remove(id);
+  remove(@MessageBody() body: { id: number }) {
+    return this.chatsService.remove(body.id);
   }
 }

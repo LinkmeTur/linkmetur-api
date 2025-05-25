@@ -1,3 +1,4 @@
+import { Chat } from 'src/chats/entities/chat.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
 import { User } from 'src/users/entities/user.entity';
 import { Entity, Column, OneToMany } from 'typeorm';
@@ -65,4 +66,10 @@ export class Corporation extends BaseEntity {
 
   @OneToMany(() => User, (user) => user.corp)
   users: Array<User>;
+
+  @OneToMany(() => Chat, (chat) => chat.remetente)
+  mensagensEnviadas: Array<Chat>;
+
+  @OneToMany(() => Chat, (chat) => chat.destinatario)
+  mensagensRecebidas: Array<Chat>;
 }

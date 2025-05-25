@@ -11,6 +11,6 @@ import { HttpModule } from '@nestjs/axios';
   ],
   controllers: [CorporationsController],
   providers: [CorporationsService],
-  exports: [CorporationsService],
+  exports: [CorporationsService, TypeOrmModule],
 })
 export class CorporationsModule {}
