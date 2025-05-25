@@ -1,5 +1,6 @@
 import {
   BeforeInsert,
+  BeforeUpdate,
   CreateDateColumn,
   PrimaryColumn,
   UpdateDateColumn,
@@ -22,5 +23,11 @@ export abstract class BaseEntity {
     this.id = randomUUID();
     this.updated_at = time;
     this.created_at = time;
+  }
+
+  @BeforeUpdate()
+  beforeUpdate(){
+     const time = new Date();   
+    this.updated_at = time;
   }
 }
