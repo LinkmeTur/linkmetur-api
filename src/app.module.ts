@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CorporationsModule } from './corporations/corporations.module';
 import { AuthenticationsModule } from './authentications/authentications.module';
 import { ChatsModule } from './chats/chats.module';
-import { ServicesModule } from './job/job.module';
+import { JobModule } from './job/job.module';
 
 @Module({
   imports: [
@@ -29,7 +29,7 @@ import { ServicesModule } from './job/job.module';
 
     AuthenticationsModule,
 
-    ServicesModule,
+    JobModule,
 
     ChatsModule,
   ],

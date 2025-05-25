@@ -1,11 +1,21 @@
-import {  Controller, Get, Post, Body, Patch, Param, Delete, UsePipes,ValidationPipe,} from '@nestjs/common';
-import { JobsService } from './job.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
+import { JobService } from './job.service';
 import { CreateJobDto } from './dto/create-job.dto';
-import { UpdateJobDto } from './dto/update-service.dto';
+import { UpdateJobDto } from './dto/update-job.dto';
 
 @Controller('jobs')
 export class JobsController {
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(private readonly jobsService: JobService) {}
 
   @Post()
   @UsePipes(new ValidationPipe())
@@ -24,10 +34,7 @@ export class JobsController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateJobDto: UpdateJobDto,
-  ) {
+  update(@Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
     return this.jobsService.update(id, updateJobDto);
   }
 
@@ -36,4 +43,3 @@ export class JobsController {
     return this.jobsService.remove(id);
   }
 }
-

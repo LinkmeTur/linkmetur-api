@@ -1,12 +1,13 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
+import { Job } from './entities/job.entity';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
-import { Job } from './entities/job.entity';
 
 @Injectable()
-export class JobsService {
+export class JobService {
   constructor(
     @InjectRepository(Job)
     private readonly jobRepository: Repository<Job>,
@@ -27,13 +28,16 @@ export class JobsService {
     });
 
     if (!job) {
-      throw new HttpException(`Job with id ${id} not found!`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `Job with id ${id} not found!`,
+        HttpStatus.NOT_FOUND,
+      );
     }
     return job;
   }
 
   async update(id: string, updateJobDto: UpdateJobDto): Promise<Job> {
-    const job = await this.findOne(id) as Job;
+    const job = (await this.findOne(id)) as Job;
     const updatedJob = Object.assign(job, updateJobDto);
     return await this.jobRepository.save(updatedJob);
   }
@@ -41,7 +45,10 @@ export class JobsService {
   async remove(id: string) {
     const job = await this.findOne(id);
     if (!job) {
-      throw new HttpException(`Job with id ${id} not found!`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `Job with id ${id} not found!`,
+        HttpStatus.NOT_FOUND,
+      );
     }
     return await this.jobRepository.delete(id);
   }
