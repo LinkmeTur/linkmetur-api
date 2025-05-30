@@ -3,28 +3,43 @@ import {
   WebSocketGateway,
   SubscribeMessage,
   MessageBody,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { ChatsService } from './chats.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
+import { Server } from 'socket.io';
 interface FindHistoryDto {
   remetenteId: string;
   destinatarioId: string;
 }
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class ChatsGateway {
+  @WebSocketServer()
+  server: Server;
   constructor(private readonly chatsService: ChatsService) {}
 
-  @SubscribeMessage('createChat')
-  create(@MessageBody() createChatDto: CreateChatDto): Promise<any> {
-    return this.chatsService.create(createChatDto);
+  @SubscribeMessage('novaMensagen')
+  async create(@MessageBody() createChatDto: CreateChatDto): Promise<any> {
+    const mensagem = await this.chatsService.create(createChatDto);
+    this.server.emit(
+      'mensagem_' + createChatDto.destinatarioID.toString(),
+      mensagem,
+    );
   }
 
   @SubscribeMessage('findHistory')
-  findHistory(@MessageBody() body: FindHistoryDto): Promise<any> {
+  async findHistory(@MessageBody() body: FindHistoryDto): Promise<any> {
     const { remetenteId, destinatarioId } = body;
-    return this.chatsService.findHistory(remetenteId, destinatarioId);
+    const historico = await this.chatsService.findHistory(
+      remetenteId,
+      destinatarioId,
+    );
+    this.server.emit(
+      `historico_${body.remetenteId}_${body.destinatarioId}`,
+      historico,
+    );
   }
 
   @SubscribeMessage('updateChat')

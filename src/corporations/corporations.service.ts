@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateCorporationDto } from './dto/create-corporation.dto';
 import { UpdateCorporationDto } from './dto/update-corporation.dto';
 import { Corporation } from './entities/corporation.entity';
-import {firstValueFrom} from 'rxjs'; 
+import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 
 @Injectable()

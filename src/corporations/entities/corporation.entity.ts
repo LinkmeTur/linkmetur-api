@@ -1,7 +1,9 @@
 import { Chat } from 'src/chats/entities/chat.entity';
+import { Contact } from 'src/contacts/entities/contact.entity';
+import { CorporationProfile } from 'src/corporation-profile/entities/corporation-profile.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
 import { User } from 'src/users/entities/user.entity';
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, OneToOne } from 'typeorm';
 
 @Entity()
 export class Corporation extends BaseEntity {
@@ -64,6 +66,9 @@ export class Corporation extends BaseEntity {
   @Column()
   localizacao: string;
 
+  @OneToOne(() => CorporationProfile, (pro) => pro.corp)
+  profile: CorporationProfile;
+
   @OneToMany(() => User, (user) => user.corp)
   users: Array<User>;
 
@@ -72,4 +77,7 @@ export class Corporation extends BaseEntity {
 
   @OneToMany(() => Chat, (chat) => chat.destinatario)
   mensagensRecebidas: Array<Chat>;
+
+  @OneToMany(() => Contact, (cont) => cont.contato)
+  contatos: Array<Contact>;
 }

@@ -7,6 +7,10 @@ import { CorporationsModule } from './corporations/corporations.module';
 import { AuthenticationsModule } from './authentications/authentications.module';
 import { ChatsModule } from './chats/chats.module';
 import { JobModule } from './job/job.module';
+import { ContactsModule } from './contacts/contacts.module';
+import { RequestForProposalModule } from './request-for-proposal/request-for-proposal.module';
+import { ProposalModule } from './proposal/proposal.module';
+import { CorporationProfileModule } from './corporation-profile/corporation-profile.module';
 
 @Module({
   imports: [
@@ -32,6 +36,14 @@ import { JobModule } from './job/job.module';
     JobModule,
 
     ChatsModule,
+
+    ContactsModule,
+
+    RequestForProposalModule,
+
+    ProposalModule,
+
+    CorporationProfileModule,
   ],
   controllers: [],
   providers: [],
