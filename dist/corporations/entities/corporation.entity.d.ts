@@ -1,0 +1,32 @@
+import { Chat } from 'src/chats/entities/chat.entity';
+import { Contact } from 'src/contacts/entities/contact.entity';
+import { CorporationProfile } from 'src/corporation-profile/entities/corporation-profile.entity';
+import { BaseEntity } from 'src/database/entities/baseEntity';
+import { User } from 'src/users/entities/user.entity';
+export declare class Corporation extends BaseEntity {
+    logo_url: string;
+    logo: Buffer;
+    cnpj: string;
+    razao_social: string;
+    natureza_juridica: string;
+    nome_fantasia: string;
+    data_inicio_atividade: string;
+    cnae_fiscal_principal: string;
+    tipo: string;
+    tags: string;
+    telefone: string;
+    email: string;
+    cep: string;
+    endereco: string;
+    numero: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+    pais: string;
+    localizacao: string;
+    profile: CorporationProfile;
+    users: Array<User>;
+    mensagensEnviadas: Array<Chat>;
+    mensagensRecebidas: Array<Chat>;
+    contatos: Array<Contact>;
+}
