@@ -16,7 +16,7 @@ export class Chat extends BaseEntity {
   @Column()
   conteudo: Buffer;
 
-  @Column()
+  @Column({ type: 'bytea' })
   iv: Buffer;
 
   @ManyToOne(() => Corporation, (corporation) => corporation.mensagensEnviadas)
