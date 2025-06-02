@@ -20,7 +20,7 @@ async function bootstrap() {
          experiência dos clientes.`,
     )
     .setVersion('1.0')
-    .addBearerAuth()
+
     .build();
 
   const documentFactory = () =>
@@ -31,4 +31,4 @@ async function bootstrap() {
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-export default bootstrap();
+bootstrap();
