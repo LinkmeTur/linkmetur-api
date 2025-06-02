@@ -31,7 +31,7 @@
     "@nestjs/platform-socket.io": "^11.1.0",
     "@nestjs/swagger": "^11.1.5",
     "@nestjs/typeorm": "^11.0.0",
-    "@nestjs/websockets": "^11.1.0",
+    "@nestjs/websockets": "^11.1.2",
     "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",

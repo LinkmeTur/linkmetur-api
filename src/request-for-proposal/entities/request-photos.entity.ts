@@ -7,7 +7,7 @@ export class RequestPhotos extends BaseEntity {
   @Column({ nullable: false })
   request_ID: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'bytea', nullable: true })
   photo: Buffer;
 
   @Column({ nullable: true })

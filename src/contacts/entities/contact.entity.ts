@@ -11,6 +11,9 @@ export class Contact extends BaseEntity {
   contactID: string;
 
   @Column({ default: false })
+  block_contact: boolean;
+
+  @Column({ default: false })
   saved_contact: boolean;
 
   @Column({ default: false })

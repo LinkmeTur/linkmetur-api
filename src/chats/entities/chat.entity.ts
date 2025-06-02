@@ -13,7 +13,7 @@ export class Chat extends BaseEntity {
   @Column()
   destinatarioID: string;
 
-  @Column()
+  @Column({ type: 'bytea' })
   conteudo: Buffer;
 
   @Column({ type: 'bytea' })
