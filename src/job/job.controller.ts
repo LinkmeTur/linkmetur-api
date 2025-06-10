@@ -8,6 +8,7 @@ import {
   Delete,
   UsePipes,
   ValidationPipe,
+  Query,
 } from '@nestjs/common';
 import { JobService } from './job.service';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -31,6 +32,16 @@ export class JobsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.jobsService.findOne(id);
+  }
+
+  @Get('corp/:corpId')
+  findForCorporation(@Param('corpId') corpId: string) {
+    return this.jobsService.findForCorporation(corpId);
+  }
+
+  @Get('filter')
+  async findFiltered(@Query() filters: Partial<CreateJobDto>) {
+    return await this.jobsService.findFiltered(filters);
   }
 
   @Patch(':id')

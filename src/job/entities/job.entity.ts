@@ -1,6 +1,7 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, ManyToOne } from 'typeorm';
 import { BaseEntity } from 'src/database/entities/baseEntity';
 import { JobPhotos } from './job_photos.entity';
+import { Corporation } from 'src/corporations/entities/corporation.entity';
 
 @Entity()
 export class Job extends BaseEntity {
@@ -35,8 +36,11 @@ export class Job extends BaseEntity {
   disponibilidade: string;
 
   @Column()
-  plubicado: boolean;
+  publicado: boolean;
 
   @OneToMany(() => JobPhotos, (photo) => photo.job)
   photos: JobPhotos[];
+
+  @ManyToOne(() => Corporation, (c) => c.jobs)
+  corp: Corporation;
 }

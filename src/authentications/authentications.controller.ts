@@ -49,7 +49,6 @@ export class AuthenticationsController {
     examples: {
       exemplo1: {
         value: {
-          codeFactor: 'string',
           data: 'string',
         },
       },

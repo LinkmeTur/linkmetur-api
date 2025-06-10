@@ -2,6 +2,7 @@ import { Chat } from 'src/chats/entities/chat.entity';
 import { Contact } from 'src/contacts/entities/contact.entity';
 import { CorporationProfile } from 'src/corporation-profile/entities/corporation-profile.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
+import { Job } from 'src/job/entities/job.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Entity, Column, OneToMany, OneToOne } from 'typeorm';
 
@@ -80,4 +81,7 @@ export class Corporation extends BaseEntity {
 
   @OneToMany(() => Contact, (cont) => cont.contato)
   contatos: Array<Contact>;
+
+  @OneToMany(() => Job, (j) => j.corp)
+  jobs: Array<Job>;
 }
