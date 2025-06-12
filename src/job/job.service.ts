@@ -18,25 +18,23 @@ export class JobService {
 
   async create(createJobDto: CreateJobDto): Promise<Job> {
     try {
-      console.log(createJobDto);
-      const job = this.jobRepository.create(createJobDto);
-      console.log(job);
-      const savedJob = await this.jobRepository.save(job);
-      console.log(savedJob);
+      const { photos, ...newDTO } = createJobDto;
 
-      if (createJobDto.photos && createJobDto.photos.length > 0) {
-        console.log(createJobDto.photos);
-        const photos = createJobDto.photos.map((photo) => {
+      const job = this.jobRepository.create(newDTO);
+      const savedJob = await this.jobRepository.save(job);
+
+      if (photos) {
+        for (const photo of photos) {
           const jobPhoto = this.jobPhotosRepository.create({
             job_ID: savedJob.id,
             photo_URL: photo.photo_URL,
             photo_alt: photo.photo_alt,
           });
-          return this.jobPhotosRepository.save(jobPhoto);
-        });
+
+          await this.jobPhotosRepository.save(jobPhoto);
+        }
 
         // Aguarda o salvamento de todas as fotos
-        await Promise.all(photos);
       }
 
       return savedJob;
@@ -67,7 +65,7 @@ export class JobService {
   }
   async findForCorporation(id: string): Promise<Job[] | string> {
     const jobs = await this.jobRepository.find({
-      where: { corp_Id: id },
+      where: { corpId: id },
     });
 
     if (!jobs) {

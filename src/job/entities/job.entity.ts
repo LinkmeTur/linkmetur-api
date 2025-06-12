@@ -6,7 +6,7 @@ import { Corporation } from 'src/corporations/entities/corporation.entity';
 @Entity()
 export class Job extends BaseEntity {
   @Column({ nullable: false })
-  corp_Id: string;
+  corpId: string;
 
   @Column()
   nome_servico: string;
