@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 
-export class CreateTwoFactorDto {
+export class RecoveryDto {
   @IsString()
-  data: string;
+  email: string;
 }

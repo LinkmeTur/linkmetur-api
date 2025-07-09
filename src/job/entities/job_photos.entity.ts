@@ -6,7 +6,7 @@ export class JobPhotos extends BaseEntity {
   @Column({ nullable: false })
   job_ID: string;
 
-  @Column()
+  @Column({ type: 'bytea', nullable: true })
   photo: Buffer;
 
   @Column()

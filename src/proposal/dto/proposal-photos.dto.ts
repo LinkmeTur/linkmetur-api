@@ -7,9 +7,6 @@ export class ProposalPhotosDto {
   proposal_ID: string;
 
   @IsOptional()
-  photo: Buffer;
-
-  @IsOptional()
   @IsUrl()
   photo_URL: string;
 

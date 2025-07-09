@@ -11,6 +11,10 @@ export class CreateContactDto {
 
   @IsBoolean()
   @IsOptional()
+  blocked_contact: boolean;
+
+  @IsBoolean()
+  @IsOptional()
   saved_contact: boolean;
 
   @IsBoolean()

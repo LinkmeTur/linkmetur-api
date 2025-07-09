@@ -6,8 +6,21 @@ import { Column, Entity, OneToOne } from 'typeorm';
 export class CorporationProfile extends BaseEntity {
   @Column()
   corpID: string;
-  @Column()
+  @Column({ nullable: true })
+  Wallpaper_Url: string;
+  @Column({ nullable: true })
+  site: string;
+  @Column({ nullable: true })
   descricao: string;
+  @Column({ nullable: true })
+  sobre: string;
+  @Column({ nullable: true })
+  horario: string;
+  @Column({ nullable: true })
+  certificacoes: string;
+  @Column({ nullable: true })
+  redesSociais: string;
+
   @OneToOne(() => Corporation, (corp) => corp.profile)
   corp: Corporation;
 }

@@ -1,11 +1,13 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, ManyToOne } from 'typeorm';
 import { BaseEntity } from 'src/database/entities/baseEntity';
 import { JobPhotos } from './job_photos.entity';
+import { Corporation } from 'src/corporations/entities/corporation.entity';
+import { JobEvaluation } from './job_evaluation.entity';
 
 @Entity()
 export class Job extends BaseEntity {
   @Column({ nullable: false })
-  corp_Id: string;
+  corpId: string;
 
   @Column()
   nome_servico: string;
@@ -25,6 +27,12 @@ export class Job extends BaseEntity {
   @Column()
   max_valor: number;
 
+  @Column({ nullable: true })
+  views: number;
+
+  @Column({ nullable: true })
+  total_views: number;
+
   @Column()
   video_url: string;
 
@@ -35,8 +43,14 @@ export class Job extends BaseEntity {
   disponibilidade: string;
 
   @Column()
-  plubicado: boolean;
+  publicado: boolean;
 
   @OneToMany(() => JobPhotos, (photo) => photo.job)
   photos: JobPhotos[];
+
+  @ManyToOne(() => Corporation, (c) => c.jobs)
+  corp: Corporation;
+
+  @OneToMany(() => JobEvaluation, (ev) => ev.job)
+  evaluations: JobEvaluation[];
 }

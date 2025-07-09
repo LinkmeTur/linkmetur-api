@@ -13,6 +13,7 @@ import { AuthenticationsService } from './authentications.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CreateTwoFactorDto } from './dto/create-twofactor.dto';
+import { RecoveryDto } from './dto/recovary-pas.dto';
 
 @ApiBearerAuth('token')
 @ApiTags('authentications')
@@ -49,7 +50,6 @@ export class AuthenticationsController {
     examples: {
       exemplo1: {
         value: {
-          codeFactor: 'string',
           data: 'string',
         },
       },
@@ -57,5 +57,22 @@ export class AuthenticationsController {
   })
   verificationTwoFactorCode(@Body() factor: CreateTwoFactorDto): Promise<any> {
     return this.authenticationsService.verificationTwoFactorCode(factor);
+  }
+
+  @Post('recovery-pass')
+  @ApiOperation({ summary: 'Ateração de senha' })
+  @ApiBody({
+    description: 'Recovery Pass',
+    examples: {
+      exemplo1: {
+        value: {
+          email: 'string',
+        },
+      },
+    },
+  })
+  recoveryPass(@Body() data: RecoveryDto): Promise<any> {
+    const { email } = data;
+    return this.authenticationsService.recoveryPassword(email);
   }
 }

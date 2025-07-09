@@ -2,16 +2,14 @@ import { Chat } from 'src/chats/entities/chat.entity';
 import { Contact } from 'src/contacts/entities/contact.entity';
 import { CorporationProfile } from 'src/corporation-profile/entities/corporation-profile.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
+import { Job } from 'src/job/entities/job.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Entity, Column, OneToMany, OneToOne } from 'typeorm';
+import { Entity, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
 
 @Entity()
 export class Corporation extends BaseEntity {
   @Column({ nullable: true })
   logo_url: string;
-
-  @Column({ type: 'bytea', nullable: true })
-  logo: Buffer;
 
   @Column()
   cnpj: string;
@@ -67,6 +65,7 @@ export class Corporation extends BaseEntity {
   localizacao: string;
 
   @OneToOne(() => CorporationProfile, (pro) => pro.corp)
+  @JoinColumn({ foreignKeyConstraintName: 'fk_corp_profile' })
   profile: CorporationProfile;
 
   @OneToMany(() => User, (user) => user.corp)
@@ -80,4 +79,7 @@ export class Corporation extends BaseEntity {
 
   @OneToMany(() => Contact, (cont) => cont.contato)
   contatos: Array<Contact>;
+
+  @OneToMany(() => Job, (j) => j.corp)
+  jobs: Array<Job>;
 }

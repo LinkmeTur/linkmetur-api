@@ -9,9 +9,6 @@ export class ProposalPhotos extends BaseEntity {
   proposal_ID: string;
 
   @Column({ nullable: true })
-  photo: Buffer;
-
-  @Column({ nullable: true })
   photo_URL: string;
 
   @Column()

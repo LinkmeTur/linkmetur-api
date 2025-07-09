@@ -13,7 +13,7 @@ import { JobPhotos } from '../entities/job_photos.entity';
 export class CreateJobDto {
   @IsString({ message: 'O corp_Id deve ser uma string válida.' })
   @IsNotEmpty({ message: 'O corp_Id é obrigatório.' })
-  corp_Id: string;
+  corpId: string;
 
   @IsString({ message: 'O servico deve ser uma string válida.' })
   @IsNotEmpty({ message: 'O servico é obrigatório.' })

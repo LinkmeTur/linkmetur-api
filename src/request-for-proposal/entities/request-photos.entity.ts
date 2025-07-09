@@ -8,12 +8,9 @@ export class RequestPhotos extends BaseEntity {
   request_ID: string;
 
   @Column({ nullable: true })
-  photo: Buffer;
-
-  @Column({ nullable: true })
   photo_URL: string;
 
-  @Column()
+  @Column({ nullable: true })
   photo_alt: string;
 
   @ManyToOne(() => RequestForProposal, (request) => request.fotos)

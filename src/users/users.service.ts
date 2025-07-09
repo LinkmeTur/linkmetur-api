@@ -16,7 +16,7 @@ export class UsersService {
   }
 
   async findAll(): Promise<Array<User>> {
-    return await this.userRepository.find();
+    return await this.userRepository.find({ relations: { corp: true } });
   }
 
   async findOne(id: string): Promise<User | string> {
@@ -34,15 +34,27 @@ export class UsersService {
   async findOneByEmailAndPass(
     email: string,
     senha: string,
-  ): Promise<User | string> {
+  ): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { email, senha },
+      relations: {
+        corp: {
+          profile: true,
+        },
+      },
+    });
+
+    return user;
+  }
+  async findOneByEmail(email: string): Promise<User | null> {
+    const user = await this.userRepository.findOne({
+      where: { email },
       relations: {
         corp: true,
       },
     });
     if (!user) {
-      return 'is not user';
+      return null;
     }
     return user;
   }
