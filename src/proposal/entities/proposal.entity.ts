@@ -1,7 +1,8 @@
 import { BaseEntity } from 'src/database/entities/baseEntity';
 import { RequestForProposal } from 'src/request-for-proposal/entities/request-for-proposal.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { ProposalPhotos } from './proposal-photos.entity';
+import { Request } from 'src/request/entities/request.entity';
 @Entity()
 export class Proposal extends BaseEntity {
   @Column()
@@ -9,17 +10,23 @@ export class Proposal extends BaseEntity {
   @Column()
   corpID: string;
   @Column()
+  prestadorID: string;
+  @Column({ nullable: true, default: null })
   resumo_proposta: string;
   @Column()
   valor_proposta: string;
-  @Column()
+  @Column({ nullable: true, default: null })
   observações: string;
-  @Column()
+  @Column({ nullable: true, default: null })
   prazo: Date;
-  @Column()
+  @Column({ default: 'enviado' })
   status: string;
-  @ManyToOne(() => RequestForProposal, (r) => r.proposals)
-  request: RequestForProposal;
+  @Column({ default: false })
+  selecionado: boolean;
+  @ManyToOne(() => RequestForProposal, (rfp) => rfp.proposals)
+  rfp: RequestForProposal;
   @OneToMany(() => ProposalPhotos, (f) => f.proposal)
   fotos: ProposalPhotos[];
+  @OneToOne(() => Request, (r) => r.proposal)
+  request: Request;
 }

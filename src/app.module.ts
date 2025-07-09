@@ -11,6 +11,8 @@ import { ContactsModule } from './contacts/contacts.module';
 import { RequestForProposalModule } from './request-for-proposal/request-for-proposal.module';
 import { ProposalModule } from './proposal/proposal.module';
 import { CorporationProfileModule } from './corporation-profile/corporation-profile.module';
+import { RequestModule } from './request/request.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -22,9 +24,9 @@ import { CorporationProfileModule } from './corporation-profile/corporation-prof
       url: process.env.DATABASE_URL,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
-      dropSchema: false,
-      retryAttempts: 2,
-      retryDelay: 100,
+      ssl: {
+        rejectUnauthorized: false,
+      },
     }),
 
     UsersModule,
@@ -44,6 +46,10 @@ import { CorporationProfileModule } from './corporation-profile/corporation-prof
     ProposalModule,
 
     CorporationProfileModule,
+
+    RequestModule,
+
+    NotificationModule,
   ],
   controllers: [],
   providers: [],

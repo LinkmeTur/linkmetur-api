@@ -16,7 +16,7 @@ export class UsersService {
   }
 
   async findAll(): Promise<Array<User>> {
-    return await this.userRepository.find();
+    return await this.userRepository.find({ relations: { corp: true } });
   }
 
   async findOne(id: string): Promise<User | string> {
@@ -38,7 +38,9 @@ export class UsersService {
     const user = await this.userRepository.findOne({
       where: { email, senha },
       relations: {
-        corp: true,
+        corp: {
+          profile: true,
+        },
       },
     });
 
@@ -47,6 +49,9 @@ export class UsersService {
   async findOneByEmail(email: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { email },
+      relations: {
+        corp: true,
+      },
     });
     if (!user) {
       return null;

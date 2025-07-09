@@ -7,9 +7,6 @@ export class RequestPhotosDto {
   request_ID: string;
 
   @IsOptional()
-  photo: Buffer;
-
-  @IsOptional()
   @IsUrl()
   photo_URL: string;
 

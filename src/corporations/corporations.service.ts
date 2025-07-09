@@ -23,7 +23,12 @@ export class CorporationsService {
   }
 
   async findAll(): Promise<Corporation[]> {
-    return await this.corporationRepository.find();
+    const corporations = await this.corporationRepository.find({
+      relations: {
+        users: true,
+      },
+    });
+    return corporations;
   }
 
   async findOne(id: string): Promise<Corporation | string> {
@@ -31,6 +36,7 @@ export class CorporationsService {
       where: { id: id },
       relations: {
         users: true,
+        profile: true,
       },
     });
 

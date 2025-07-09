@@ -7,6 +7,9 @@ export class CreateRequestForProposalDto {
   @IsString()
   corpID: string;
 
+  @IsString()
+  prestadorID: string;
+
   @IsNotEmpty()
   @IsString()
   titulo: string;

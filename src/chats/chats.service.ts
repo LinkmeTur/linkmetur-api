@@ -40,15 +40,21 @@ export class ChatsService {
   }
 
   async create(createChatDto: CreateChatDto) {
-    const { conteudo } = createChatDto;
-    const encrypted = this.crypted(conteudo);
+    const encrypted = this.crypted(createChatDto.conteudo);
     const message = {
       ...createChatDto,
       conteudo: encrypted.encrypted,
       iv: encrypted.iv,
     };
     const newMessage = this.chatRepository.create(message);
-    return this.chatRepository.save(newMessage);
+    const result = await this.chatRepository.save(newMessage);
+    const { iv, conteudo, ...resto } = result;
+    const decrypt = this.decryted(conteudo, iv);
+    return {
+      ...resto,
+      conteudo: decrypt,
+      iv,
+    };
   }
 
   findAll() {

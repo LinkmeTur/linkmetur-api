@@ -8,9 +8,6 @@ export class ProposalPhotos extends BaseEntity {
   @Column({ nullable: false })
   proposal_ID: string;
 
-  @Column({ type: 'bytea', nullable: true })
-  photo: Buffer;
-
   @Column({ nullable: true })
   photo_URL: string;
 
