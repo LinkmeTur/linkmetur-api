@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCorporationProfileDto } from './dto/create-corporation-profile.dto';
 import { UpdateCorporationProfileDto } from './dto/update-corporation-profile.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -28,7 +28,16 @@ export class CorporationProfileService {
       where: { id },
     });
     if (!profile) {
-      throw new Error('Profile not found!');
+      throw new NotFoundException('Profile not found!');
+    }
+    return profile;
+  }
+  async findOneByCorporationId(corpID: string) {
+    const profile = await this.corporationProfileRepository.findOne({
+      where: { corpID },
+    });
+    if (!profile) {
+      throw new NotFoundException('Profile not found!');
     }
     return profile;
   }

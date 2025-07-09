@@ -31,6 +31,10 @@ export class CorporationProfileController {
   findOne(@Param('id') id: string) {
     return this.corporationProfileService.findOne(id);
   }
+  @Get('corp/:corpID')
+  findOneByCorporationId(@Param('corpID') corpID: string) {
+    return this.corporationProfileService.findOneByCorporationId(corpID);
+  }
 
   @Patch(':id')
   update(

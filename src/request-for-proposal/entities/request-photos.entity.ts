@@ -7,13 +7,10 @@ export class RequestPhotos extends BaseEntity {
   @Column({ nullable: false })
   request_ID: string;
 
-  @Column({ type: 'bytea', nullable: true })
-  photo: Buffer;
-
   @Column({ nullable: true })
   photo_URL: string;
 
-  @Column()
+  @Column({ nullable: true })
   photo_alt: string;
 
   @ManyToOne(() => RequestForProposal, (request) => request.fotos)

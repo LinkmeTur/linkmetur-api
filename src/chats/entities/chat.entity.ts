@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Corporation } from 'src/corporations/entities/corporation.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
 
@@ -20,8 +20,10 @@ export class Chat extends BaseEntity {
   iv: Buffer;
 
   @ManyToOne(() => Corporation, (corporation) => corporation.mensagensEnviadas)
+  @JoinColumn({ name: 'remetenteID' })
   remetente: Corporation;
 
   @ManyToOne(() => Corporation, (corporation) => corporation.mensagensRecebidas)
+  @JoinColumn({ name: 'destinatarioID' })
   destinatario: Corporation;
 }
