@@ -39,6 +39,19 @@ export class RequestForProposalController {
     );
   }
 
+  @Get('prestador/:prestadorID')
+  findForPrestador(
+    @Param('prestadorID') prestadorID: string,
+    @Query() query: { page: string; limit: string; all: string },
+  ) {
+    return this.requestForProposalService.findForPrestador(
+      prestadorID,
+      Number(query.page),
+      Number(query.limit),
+      Boolean(query.all),
+    );
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.requestForProposalService.findOne(id);

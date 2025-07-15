@@ -24,6 +24,66 @@ export class RequestForProposalService {
   async findAll() {
     return await this.requestForProposalRepository.find();
   }
+
+  async findForPrestador(
+    prestadorID: string,
+    page: number,
+    limit: number,
+    all: boolean,
+  ): Promise<{
+    rfps: RequestForProposal[];
+    totalRecords: number;
+    totalPages: number;
+  }> {
+    if (all) {
+      // Busca todas as RFPs (sem paginação inicial)
+      const response = await this.requestForProposalRepository.find({
+        relations: {
+          fotos: true,
+          proposals: true,
+        },
+      });
+      console.log('rfps', response);
+      if (!response.length) {
+        throw new HttpException('RFPs not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Filtro: RFPs sem prestador ou com prestador igual ao informado
+      const filtered = response.filter((rfp) => {
+        console.log(rfp.prestadorID, prestadorID);
+        console.log(rfp.prestadorID === null, rfp.prestadorID === prestadorID);
+        return rfp.prestadorID === null || rfp.prestadorID === prestadorID;
+      });
+
+      const totalRecords = filtered.length;
+      const totalPages = Math.ceil(totalRecords / limit);
+      const startIndex = (page - 1) * limit;
+      const paginated = filtered.slice(startIndex, startIndex + limit);
+
+      return {
+        rfps: paginated,
+        totalRecords,
+        totalPages,
+      };
+    }
+    const skip = (page - 1) * limit;
+    const [rfps, totalRecords] =
+      await this.requestForProposalRepository.findAndCount({
+        where: { prestadorID },
+        skip,
+        take: limit,
+        relations: {
+          fotos: true,
+          proposals: true,
+        },
+      });
+    if (!rfps) {
+      throw new HttpException('RFPs not found', HttpStatus.NOT_FOUND);
+    }
+    const totalPages = Math.ceil(totalRecords / limit);
+    return { rfps, totalRecords, totalPages };
+  }
+
   async findAllForCorporation(
     corpID: string,
     page: number,
