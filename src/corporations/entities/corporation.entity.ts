@@ -64,8 +64,11 @@ export class Corporation extends BaseEntity {
   @Column()
   localizacao: string;
 
+  @Column({ nullable: true, default: null })
+  profileId: string;
+
   @OneToOne(() => CorporationProfile, (pro) => pro.corp)
-  @JoinColumn({ foreignKeyConstraintName: 'fk_corp_profile' })
+  @JoinColumn({ name: 'profileId' })
   profile: CorporationProfile;
 
   @OneToMany(() => User, (user) => user.corp)
