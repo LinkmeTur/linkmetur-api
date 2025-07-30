@@ -37,20 +37,32 @@ export class ProposalService {
 
   async findAll(): Promise<Proposal[]> {
     return await this.proposalRepository.find({
-      relations: ['request', 'fotos'],
+      relations: {
+        request: true,
+        rfp: true,
+        fotos: true,
+      },
     });
   }
   async findAllProposalForCoporation(corpID: string): Promise<Proposal[]> {
     return await this.proposalRepository.find({
       where: { corpID },
-      relations: ['request', 'fotos'],
+      relations: {
+        request: true,
+        rfp: true,
+        fotos: true,
+      },
     });
   }
 
   async findOne(id: string) {
     return await this.proposalRepository.findOne({
       where: { id },
-      relations: ['request', 'fotos'],
+      relations: {
+        request: true,
+        rfp: true,
+        fotos: true,
+      },
     });
   }
 

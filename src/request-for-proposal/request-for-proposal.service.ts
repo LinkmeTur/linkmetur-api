@@ -22,7 +22,14 @@ export class RequestForProposalService {
   }
 
   async findAll() {
-    return await this.requestForProposalRepository.find();
+    return await this.requestForProposalRepository.find({
+      relations: {
+        proposals: {
+          fotos: true,
+        },
+        fotos: true,
+      },
+    });
   }
 
   async findForPrestador(
@@ -39,8 +46,10 @@ export class RequestForProposalService {
       // Busca todas as RFPs (sem paginação inicial)
       const response = await this.requestForProposalRepository.find({
         relations: {
+          proposals: {
+            fotos: true,
+          },
           fotos: true,
-          proposals: true,
         },
       });
       console.log('rfps', response);
@@ -73,8 +82,10 @@ export class RequestForProposalService {
         skip,
         take: limit,
         relations: {
+          proposals: {
+            fotos: true,
+          },
           fotos: true,
-          proposals: true,
         },
       });
     if (!rfps) {
@@ -112,7 +123,13 @@ export class RequestForProposalService {
   }
 
   async findOne(id: string) {
-    return await this.requestForProposalRepository.findOne({ where: { id } });
+    return await this.requestForProposalRepository.findOne({
+      where: { id },
+      relations: {
+        proposals: true,
+        fotos: true,
+      },
+    });
   }
 
   async update(

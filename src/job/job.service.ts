@@ -249,7 +249,7 @@ export class JobService {
       take: limit,
       skip: (page - 1) * limit,
 
-      relations: { photos: true, evaluations: true },
+      relations: { photos: true, evaluations: true, corp: true },
     });
 
     console.log(jobs);
