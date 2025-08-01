@@ -13,7 +13,9 @@ export class Proposal extends BaseEntity {
   prestadorID: string;
   @Column({ nullable: true, default: null })
   resumo_proposta: string;
-  @Column()
+  @Column({ nullable: true, default: null })
+  nome_empresa: string;
+  @Column({ nullable: true, default: null })
   valor_proposta: string;
   @Column({ nullable: true, default: null })
   observações: string;

@@ -111,7 +111,9 @@ export class RequestForProposalService {
         skip,
         take: limit,
         relations: {
-          proposals: true,
+          proposals: {
+            fotos: true,
+          },
           fotos: true,
         },
       });
@@ -126,7 +128,9 @@ export class RequestForProposalService {
     return await this.requestForProposalRepository.findOne({
       where: { id },
       relations: {
-        proposals: true,
+        proposals: {
+          fotos: true,
+        },
         fotos: true,
       },
     });

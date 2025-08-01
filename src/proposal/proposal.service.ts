@@ -60,15 +60,40 @@ export class ProposalService {
       where: { id },
       relations: {
         request: true,
-        rfp: true,
+        rfp: { fotos: true },
         fotos: true,
       },
     });
   }
 
   async update(id: string, updateProposalDto: UpdateProposalDto) {
-    await this.proposalRepository.update(id, updateProposalDto);
-    return await this.proposalRepository.findOne({ where: { id } });
+    const { fotos, ...newDTO } = updateProposalDto;
+
+    await this.proposalRepository.update(id, newDTO);
+
+    if (fotos && Array.isArray(fotos)) {
+      for (const foto of fotos) {
+        if (foto.id) {
+          const { id, ...upfoto } = foto;
+          await this.proposalPhotosRepository.update(id, upfoto);
+        } else {
+          const novaFoto = this.proposalPhotosRepository.create({
+            photo_URL: foto.photo_URL,
+            photo_alt: foto.photo_alt,
+            proposal_ID: id,
+          });
+          await this.proposalPhotosRepository.save(novaFoto);
+        }
+      }
+    }
+    return await this.proposalRepository.findOne({
+      where: { id },
+      relations: {
+        request: true,
+        rfp: { fotos: true },
+        fotos: true,
+      },
+    });
   }
 
   async remove(id: string): Promise<void> {
