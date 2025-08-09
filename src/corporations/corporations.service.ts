@@ -26,6 +26,8 @@ export class CorporationsService {
     const corporations = await this.corporationRepository.find({
       relations: {
         users: true,
+        profile: true,
+        jobs: true,
       },
     });
     return corporations;

@@ -75,7 +75,7 @@ export class JobsController {
     return await this.jobsService.findFiltered(query);
   }
 
-  @Get(':id')
+  @Get('/:id')
   findOne(@Param('id') id: string) {
     return this.jobsService.findOne(id);
   }

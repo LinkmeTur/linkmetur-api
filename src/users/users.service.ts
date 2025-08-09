@@ -23,7 +23,10 @@ export class UsersService {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: {
-        corp: true,
+        corp: {
+          profile: true,
+          users: true,
+        },
       },
     });
     if (!user) {
@@ -40,6 +43,7 @@ export class UsersService {
       relations: {
         corp: {
           profile: true,
+          users: true,
         },
       },
     });

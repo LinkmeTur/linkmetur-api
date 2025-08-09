@@ -17,6 +17,7 @@ export class ProposalController {
 
   @Post()
   async create(@Body() createProposalDto: CreateProposalDto) {
+    console.log(createProposalDto);
     return await this.proposalService.create(createProposalDto);
   }
 
