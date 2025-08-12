@@ -2,11 +2,28 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // 1. Configuração de CORS para permitir apenas origens confiáveis
+  app.enableCors({
+    origin: ['http://localhost:3000', 'https://app.linkmetur.com.br'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+  // 2. Aplica um ValidationPipe global para validar os DTOs
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+  // 3. Configura o WebSocket (Socket.IO)
   app.useWebSocketAdapter(new IoAdapter(app));
 
+  // 4. Configuração do Swagger para documentação da API, incluindo autenticação
   const configSwagger = new DocumentBuilder()
     .setTitle('API - Linke Tur')
     .setDescription(
@@ -18,13 +35,23 @@ async function bootstrap() {
          experiência dos clientes.`,
     )
     .setVersion('1.0')
-
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Insira o token JWT para acessar os endpoints',
+        in: 'header',
+      },
+      'access-token',
+    )
     .build();
 
   const documentFactory = () =>
     SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api', app, documentFactory);
-  app.enableCors();
+
   await app.listen(parseInt(process.env.PORT ?? '8081'), '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
