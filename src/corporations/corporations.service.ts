@@ -66,8 +66,6 @@ export class CorporationsService {
       where: { tipo: tipo as CorporationTipo },
       relations: {
         users: true,
-        profile: true,
-        jobs: true,
       },
     });
     return corporations;

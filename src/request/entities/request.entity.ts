@@ -8,19 +8,19 @@ export class Request extends BaseEntity {
   @Column()
   jobID: string;
 
-  @Column({ nullable: true })
+  @Column()
   nome_job: string;
 
   @Column()
   corpID: string;
 
-  @Column({ nullable: true })
+  @Column()
   nome_corp: string;
 
   @Column()
   prestadorID: string;
 
-  @Column({ nullable: true })
+  @Column()
   nome_prestador: string;
 
   @Column()
@@ -40,6 +40,6 @@ export class Request extends BaseEntity {
   @Column()
   prazo: Date;
 
-  @Column({ default: 'Pendente' })
+  @Column()
   status: string;
 }

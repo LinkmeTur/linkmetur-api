@@ -208,7 +208,6 @@ export class JobService {
 
     return { jobs: paginatedJobs, totalRecords, totalPages };
   }
-
   async findFilteredForCorp(
     corpId: string,
     filters: {
@@ -223,9 +222,8 @@ export class JobService {
       limit: number;
     },
   ): Promise<{ jobs: Job[]; totalRecords: number; totalPages: number }> {
-    // eslint-disable-next-line prefer-const
-    let where: any = { corpId };
-
+    const where: any = { corpId };
+    const order: any = {};
     const { page, limit } = filters;
 
     // Filtros iniciais
@@ -241,22 +239,19 @@ export class JobService {
     if (filters.max_valor) {
       where.max_valor = LessThanOrEqual(filters.max_valor);
     }
-    console.log('w->', where);
+
     // Busca todos os registros que atendem aos filtros principais
-    const [jobs, totalRecords] = await this.jobRepository.findAndCount({
+    const allJobs = await this.jobRepository.find({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       where,
-      take: limit,
-      skip: (page - 1) * limit,
-
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      order,
       relations: { photos: true, evaluations: true, corp: true },
     });
 
-    console.log(jobs);
     // Filtro por localização
-    let filteredJobs = jobs;
+    let filteredJobs = allJobs;
     if (filters.localizacao) {
-      console.log('loc');
       filteredJobs = filteredJobs.filter(
         (job) =>
           job.corp.cidade.includes(filters.localizacao as string) ||
@@ -266,7 +261,6 @@ export class JobService {
 
     // Filtro por média de rating
     if (filters.min_rating) {
-      console.log(filters.min_rating);
       filteredJobs = filteredJobs.filter((job) => {
         const avgRating =
           job.evaluations.reduce((sum, ev) => sum + ev.rating, 0) /
@@ -276,17 +270,14 @@ export class JobService {
     }
 
     // Atualiza totalRecords e totalPages com base nos registros filtrados
-
+    const totalRecords = filteredJobs.length;
     const totalPages = Math.ceil(totalRecords / limit);
 
     // Aplica paginação manual com `slice()`
     const skip = (page - 1) * limit;
-    console.log('skip', skip);
-    console.log('limit', limit);
-    console.log('totalRecords', totalRecords);
-    console.log('totalPages', totalPages);
+    const paginatedJobs = filteredJobs.slice(skip, skip + limit);
 
-    return { jobs: filteredJobs, totalRecords, totalPages };
+    return { jobs: paginatedJobs, totalRecords, totalPages };
   }
 
   async update(id: string, updateJobDto: UpdateJobDto): Promise<Job> {

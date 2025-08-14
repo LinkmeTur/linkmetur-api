@@ -11,7 +11,7 @@ export class ProposalPhotos extends BaseEntity {
   @Column({ nullable: true })
   photo_URL: string;
 
-  @Column({ nullable: true })
+  @Column()
   photo_alt: string;
 
   @ManyToOne(() => Proposal, (p) => p.fotos)

@@ -27,12 +27,12 @@ export class RequestService {
     if (tipo === 'P') {
       return await this.requestRepository.find({
         where: { prestadorID: userId },
-        relations: { rfp: { fotos: true }, proposal: { fotos: true } },
+        relations: { rfp: true, proposal: true },
       });
     } else {
       return await this.requestRepository.find({
         where: { corpID: userId },
-        relations: { rfp: { fotos: true }, proposal: { fotos: true } },
+        relations: { rfp: true, proposal: true },
       });
     }
   }

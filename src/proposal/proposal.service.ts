@@ -4,96 +4,40 @@ import { UpdateProposalDto } from './dto/update-proposal.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Proposal } from './entities/proposal.entity';
 import { Repository } from 'typeorm';
-import { ProposalPhotos } from './entities/proposal-photos.entity';
 
 @Injectable()
 export class ProposalService {
   constructor(
     @InjectRepository(Proposal)
     private readonly proposalRepository: Repository<Proposal>,
-    @InjectRepository(ProposalPhotos)
-    private readonly proposalPhotosRepository: Repository<ProposalPhotos>,
   ) {}
   async create(createProposalDto: CreateProposalDto) {
-    console.log(createProposalDto);
-    const { fotos, ...newDTO } = createProposalDto;
-    const newProposal = this.proposalRepository.create(newDTO);
-    console.log(newProposal);
-    const saved = await this.proposalRepository.save(newProposal);
-    console.log(saved);
-
-    if (fotos && Array.isArray(fotos)) {
-      for (const foto of fotos) {
-        const novaFoto = this.proposalPhotosRepository.create({
-          photo_URL: foto.photo_URL,
-          photo_alt: foto.photo_alt,
-          proposal_ID: saved.id,
-        });
-        await this.proposalPhotosRepository.save(novaFoto);
-      }
-    }
-    return saved;
+    const newProposal = this.proposalRepository.create(createProposalDto);
+    return await this.proposalRepository.save(newProposal);
   }
 
   async findAll(): Promise<Proposal[]> {
     return await this.proposalRepository.find({
-      relations: {
-        request: true,
-        rfp: true,
-        fotos: true,
-      },
+      relations: ['request', 'fotos'],
     });
   }
   async findAllProposalForCoporation(corpID: string): Promise<Proposal[]> {
     return await this.proposalRepository.find({
       where: { corpID },
-      relations: {
-        request: true,
-        rfp: true,
-        fotos: true,
-      },
+      relations: ['request', 'fotos'],
     });
   }
 
   async findOne(id: string) {
     return await this.proposalRepository.findOne({
       where: { id },
-      relations: {
-        request: true,
-        rfp: { fotos: true },
-        fotos: true,
-      },
+      relations: ['request', 'fotos'],
     });
   }
 
   async update(id: string, updateProposalDto: UpdateProposalDto) {
-    const { fotos, ...newDTO } = updateProposalDto;
-
-    await this.proposalRepository.update(id, newDTO);
-
-    if (fotos && Array.isArray(fotos)) {
-      for (const foto of fotos) {
-        if (foto.id) {
-          const { id, ...upfoto } = foto;
-          await this.proposalPhotosRepository.update(id, upfoto);
-        } else {
-          const novaFoto = this.proposalPhotosRepository.create({
-            photo_URL: foto.photo_URL,
-            photo_alt: foto.photo_alt,
-            proposal_ID: id,
-          });
-          await this.proposalPhotosRepository.save(novaFoto);
-        }
-      }
-    }
-    return await this.proposalRepository.findOne({
-      where: { id },
-      relations: {
-        request: true,
-        rfp: { fotos: true },
-        fotos: true,
-      },
-    });
+    await this.proposalRepository.update(id, updateProposalDto);
+    return await this.proposalRepository.findOne({ where: { id } });
   }
 
   async remove(id: string): Promise<void> {

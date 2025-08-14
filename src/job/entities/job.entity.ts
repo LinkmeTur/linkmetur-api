@@ -33,16 +33,16 @@ export class Job extends BaseEntity {
   @Column({ nullable: true })
   total_views: number;
 
-  @Column({ nullable: true })
+  @Column()
   video_url: string;
 
-  @Column({ nullable: true })
+  @Column()
   certificacoes: string;
 
-  @Column({ nullable: true })
+  @Column()
   disponibilidade: string;
 
-  @Column({ default: false })
+  @Column()
   publicado: boolean;
 
   @OneToMany(() => JobPhotos, (photo) => photo.job)
