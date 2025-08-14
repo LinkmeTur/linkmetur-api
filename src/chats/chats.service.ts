@@ -70,8 +70,8 @@ export class ChatsService {
   ): Promise<(ReadChatDTO | undefined)[]> {
     const messageList = await this.chatRepository.find({
       where: [
-        { remetenteID: remetenteId, destinatarioID: destinatarioId },
-        { remetenteID: destinatarioId, destinatarioID: remetenteId },
+        { remetenteId, destinatarioId },
+        { destinatarioId, remetenteId },
       ],
       order: { created_at: 'ASC' },
     });

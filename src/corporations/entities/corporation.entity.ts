@@ -24,7 +24,6 @@ export enum CorporationTipo {
 @Index('IDX_CORP_TIPO', ['tipo'])
 @Index('IDX_CORP_CIDADE', ['cidade'])
 @Index('IDX_CORP_ESTADO', ['estado'])
-@Index('IDX_CORP_CREATED', ['createdAt'])
 @Entity('corporation')
 export class Corporation extends BaseEntity {
   @Column({ nullable: true })
@@ -50,11 +49,8 @@ export class Corporation extends BaseEntity {
   cnae_fiscal_principal: string;
 
   @Index()
-  @Column({
-    type: 'enum',
-    enum: CorporationTipo,
-  })
-  tipo: CorporationTipo;
+  @Column()
+  tipo: string;
 
   @Column({ nullable: true })
   tags: string;

@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,14 +11,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-  // 2. Aplica um ValidationPipe global para validar os DTOs
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
+
   // 3. Configura o WebSocket (Socket.IO)
   app.useWebSocketAdapter(new IoAdapter(app));
 
@@ -35,17 +27,7 @@ async function bootstrap() {
          experiência dos clientes.`,
     )
     .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Insira o token JWT para acessar os endpoints',
-        in: 'header',
-      },
-      'access-token',
-    )
+
     .build();
 
   const documentFactory = () =>

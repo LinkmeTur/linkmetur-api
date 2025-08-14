@@ -30,5 +30,5 @@ export class Notification extends BaseEntity {
   link: string; // redirecionamento
 
   @Column({ nullable: true })
-  metadata: any; // dados extras (ex: requestId, proposalId)
+  metadata: string; // dados extras (ex: requestId, proposalId)
 }

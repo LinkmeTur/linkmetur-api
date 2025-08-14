@@ -1,28 +1,29 @@
 import {
+  BeforeInsert,
   BeforeUpdate,
   CreateDateColumn,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { randomUUID } from 'node:crypto';
 
 export abstract class BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn()
   id: string;
 
-  @CreateDateColumn({
-    name: 'created_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
+  @CreateDateColumn()
   created_at: Date;
 
-  @UpdateDateColumn({
-    name: 'updated_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
+  @UpdateDateColumn()
   updated_at: Date;
+
+  @BeforeInsert()
+  beforeCreate() {
+    const time = new Date();
+    this.id = randomUUID();
+    this.updated_at = time;
+    this.created_at = time;
+  }
 
   @BeforeUpdate()
   beforeUpdate() {

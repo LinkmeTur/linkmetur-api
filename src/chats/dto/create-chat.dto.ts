@@ -2,9 +2,9 @@ import { IsString, IsUUID } from 'class-validator';
 
 export class CreateChatDto {
   @IsUUID()
-  remetenteID: string;
+  remetenteId: string;
   @IsUUID()
-  destinatarioID: string;
+  destinatarioId: string;
   @IsString()
   conteudo: string;
   @IsString()

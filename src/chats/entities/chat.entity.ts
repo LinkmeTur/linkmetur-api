@@ -5,14 +5,20 @@ import { Contact } from 'src/contacts/entities/contact.entity';
 
 @Entity('chat')
 export class Chat extends BaseEntity {
-  @Column({ type: 'text' })
-  mensagem: string;
+  @Column({ type: 'bytea' })
+  conteudo: Buffer;
+
+  @Column({ type: 'bytea' })
+  iv: Buffer;
 
   @Column({ default: false })
   lida: boolean;
 
   @Column({ name: 'remetenteId' })
   remetenteId: string;
+
+  @Column()
+  remetenteNome: string;
 
   @Column({ name: 'destinatarioId' })
   destinatarioId: string;

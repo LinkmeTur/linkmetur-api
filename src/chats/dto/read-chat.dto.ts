@@ -2,9 +2,9 @@ import { Corporation } from 'src/corporations/entities/corporation.entity';
 
 export type ReadChatDTO = {
   conteudo: string;
-  remetenteID: string;
+  remetenteId: string;
   remetenteNome: string;
-  destinatarioID: string;
+  destinatarioId: string;
   remetente: Corporation;
   destinatario: Corporation;
   id: string;

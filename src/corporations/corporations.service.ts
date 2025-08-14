@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCorporationDto } from './dto/create-corporation.dto';
 import { UpdateCorporationDto } from './dto/update-corporation.dto';
-import { Corporation, CorporationTipo } from './entities/corporation.entity';
+import { Corporation } from './entities/corporation.entity';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { CorporationProfile } from 'src/corporation-profile/entities/corporation-profile.entity';
@@ -25,24 +25,11 @@ export class CorporationsService {
     private readonly httpService: HttpService, // ✅ Injeção correta
   ) {}
 
-  async create(createDto: CreateCorporationDto): Promise<Corporation> {
-    const existing = await this.corpRepo.findOne({
-      where: [{ cnpj: createDto.cnpj }, { email: createDto.email }],
-    });
-    if (existing) {
-      throw new Error('CNPJ ou email já cadastrado');
-    }
-
-    const corporation = this.corpRepo.create(createDto);
-    const saved = await this.corpRepo.save(corporation);
-
-    // Cria perfil vazio
-    const profile = this.profileRepo.create({ corpID: saved.id });
-    await this.profileRepo.save(profile);
-
-    // Atualiza o profileId no corporation
-    saved.profileId = profile.id;
-    return this.corpRepo.save(saved);
+  async create(
+    createCorporationDto: CreateCorporationDto,
+  ): Promise<Corporation> {
+    const corporation = this.corpRepo.create(createCorporationDto);
+    return await this.corpRepo.save(corporation);
   }
 
   async findAll(): Promise<Corporation[]> {
@@ -56,14 +43,8 @@ export class CorporationsService {
     return corporations;
   }
   async findForType(tipo: string): Promise<Corporation[]> {
-    if (!Object.values(CorporationTipo).includes(tipo as CorporationTipo)) {
-      throw new HttpException(
-        'Tipo de empresa inválido. Use "T" ou "P".',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
     const corporations = await this.corpRepo.find({
-      where: { tipo: tipo as CorporationTipo },
+      where: { tipo: tipo },
       relations: {
         users: true,
       },

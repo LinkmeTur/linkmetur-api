@@ -4,7 +4,7 @@ import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 
 @Entity('corporation_profile')
 export class CorporationProfile extends BaseEntity {
-  @Column({ name: 'corpId', unique: true })
+  @Column({ name: 'corpId', unique: true, nullable: true })
   corpId: string;
 
   @Column({ nullable: true })

@@ -61,7 +61,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const mensagem = await this.chatsService.create(data);
     console.log('passo 2.1', mensagem);
     this.server.emit(
-      'mensagem_' + data.destinatarioID.toString(),
+      'mensagem_' + data.destinatarioId.toString(),
       mensagem.conteudo,
     );
   }
