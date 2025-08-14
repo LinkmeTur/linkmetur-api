@@ -1,16 +1,36 @@
-import { Chat } from 'src/chats/entities/chat.entity';
-import { Contact } from 'src/contacts/entities/contact.entity';
-import { CorporationProfile } from 'src/corporation-profile/entities/corporation-profile.entity';
-import { BaseEntity } from 'src/database/entities/baseEntity';
-import { Job } from 'src/job/entities/job.entity';
-import { User } from 'src/users/entities/user.entity';
-import { Entity, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
+// src/corporation/entities/corporation.entity.ts
+import {
+  Entity,
+  Column,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
+  Index,
+} from 'typeorm';
+import { BaseEntity } from '../../database/entities/baseEntity';
+import { User } from '../../users/entities/user.entity';
+import { Chat } from '../../chats/entities/chat.entity';
+import { Contact } from '../../contacts/entities/contact.entity';
+import { Job } from '../../job/entities/job.entity';
+import { CorporationProfile } from '../../corporation-profile/entities/corporation-profile.entity';
+import { Notification } from 'src/notification/entities/notification.entity';
 
-@Entity()
+export enum CorporationTipo {
+  TURISMO = 'T',
+  PRESTADOR = 'P',
+}
+
+@Index('IDX_CORP_CNPJ', ['cnpj'], { unique: true })
+@Index('IDX_CORP_TIPO', ['tipo'])
+@Index('IDX_CORP_CIDADE', ['cidade'])
+@Index('IDX_CORP_ESTADO', ['estado'])
+@Index('IDX_CORP_CREATED', ['createdAt'])
+@Entity('corporation')
 export class Corporation extends BaseEntity {
   @Column({ nullable: true })
   logo_url: string;
 
+  @Index({ unique: true })
   @Column()
   cnpj: string;
 
@@ -29,8 +49,12 @@ export class Corporation extends BaseEntity {
   @Column()
   cnae_fiscal_principal: string;
 
-  @Column()
-  tipo: string;
+  @Index()
+  @Column({
+    type: 'enum',
+    enum: CorporationTipo,
+  })
+  tipo: CorporationTipo;
 
   @Column({ nullable: true })
   tags: string;
@@ -46,15 +70,18 @@ export class Corporation extends BaseEntity {
 
   @Column()
   endereco: string;
+
   @Column({ nullable: true })
   numero: string;
 
   @Column({ nullable: true })
   bairro: string;
 
+  @Index()
   @Column()
   cidade: string;
 
+  @Index()
   @Column()
   estado: string;
 
@@ -64,10 +91,10 @@ export class Corporation extends BaseEntity {
   @Column()
   localizacao: string;
 
-  @Column({ nullable: true, default: null })
+  @Column({ nullable: true })
   profileId: string;
 
-  @OneToOne(() => CorporationProfile, (pro) => pro.corp)
+  @OneToOne(() => CorporationProfile, (profile) => profile.corp)
   @JoinColumn({ name: 'profileId' })
   profile: CorporationProfile;
 
@@ -80,9 +107,12 @@ export class Corporation extends BaseEntity {
   @OneToMany(() => Chat, (chat) => chat.destinatario)
   mensagensRecebidas: Array<Chat>;
 
-  @OneToMany(() => Contact, (cont) => cont.contato)
+  @OneToMany(() => Contact, (contato) => contato.corporation)
   contatos: Array<Contact>;
 
-  @OneToMany(() => Job, (j) => j.corp)
+  @OneToMany(() => Notification, (n) => n.corp)
+  notifications: Array<Notification>;
+
+  @OneToMany(() => Job, (job) => job.corp)
   jobs: Array<Job>;
 }

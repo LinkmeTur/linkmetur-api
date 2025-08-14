@@ -9,50 +9,59 @@ import { Repository } from 'typeorm';
 export class CorporationProfileService {
   constructor(
     @InjectRepository(CorporationProfile)
-    private readonly corporationProfileRepository: Repository<CorporationProfile>,
+    private readonly profileRepo: Repository<CorporationProfile>,
   ) {}
 
-  async create(createCorporationProfileDto: CreateCorporationProfileDto) {
-    const response = this.corporationProfileRepository.create(
-      createCorporationProfileDto,
-    );
-    return await this.corporationProfileRepository.save(response);
+  async create(
+    createDto: CreateCorporationProfileDto,
+  ): Promise<CorporationProfile> {
+    const profile = this.profileRepo.create(createDto);
+    return this.profileRepo.save(profile);
   }
 
-  async findAll() {
-    return await this.corporationProfileRepository.find();
+  async findAll(): Promise<CorporationProfile[]> {
+    return await this.profileRepo.find({
+      relations: {
+        corp: {
+          users: true,
+        },
+      },
+    });
   }
 
-  async findOne(id: string) {
-    const profile = await this.corporationProfileRepository.findOne({
+  async findOne(id: string): Promise<CorporationProfile> {
+    const profile = await this.profileRepo.findOne({
       where: { id },
+      relations: ['corp'],
     });
     if (!profile) {
-      throw new NotFoundException('Profile not found!');
+      throw new NotFoundException(`Perfil com ID ${id} não encontrado`);
     }
     return profile;
   }
-  async findOneByCorporationId(corpID: string) {
-    const profile = await this.corporationProfileRepository.findOne({
-      where: { corpID },
+
+  async findByCorpId(corpId: string): Promise<CorporationProfile> {
+    const profile = await this.profileRepo.findOne({
+      where: { corpId },
+      relations: ['corp'],
     });
     if (!profile) {
-      throw new NotFoundException('Profile not found!');
+      throw new NotFoundException(`Perfil da empresa ${corpId} não encontrado`);
     }
     return profile;
   }
 
   async update(
     id: string,
-    updateCorporationProfileDto: UpdateCorporationProfileDto,
-  ) {
-    return await this.corporationProfileRepository.update(
-      id,
-      updateCorporationProfileDto,
-    );
+    updateDto: UpdateCorporationProfileDto,
+  ): Promise<CorporationProfile> {
+    const profile = await this.findOne(id);
+    Object.assign(profile, updateDto);
+    return this.profileRepo.save(profile);
   }
 
-  async remove(id: string) {
-    return await this.corporationProfileRepository.delete(id);
+  async remove(id: string): Promise<void> {
+    const profile = await this.findOne(id);
+    await this.profileRepo.remove(profile);
   }
 }

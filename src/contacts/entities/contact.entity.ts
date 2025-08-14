@@ -1,6 +1,7 @@
+import { Chat } from 'src/chats/entities/chat.entity';
 import { Corporation } from 'src/corporations/entities/corporation.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 
 @Entity()
 export class Contact extends BaseEntity {
@@ -24,4 +25,7 @@ export class Contact extends BaseEntity {
 
   @ManyToOne(() => Corporation)
   contato: Corporation;
+
+  @OneToMany(() => Chat, (chat) => chat.contato)
+  chats: Chat[];
 }

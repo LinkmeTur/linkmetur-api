@@ -1,21 +1,116 @@
-import { IsString } from 'class-validator';
+// src/corporation-profile/dto/create-corporation-profile.dto.ts
+import {
+  IsOptional,
+  IsString,
+  IsArray,
+  ValidateNested,
+  IsObject,
+  IsNumber,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+class GalleryItem {
+  @IsString()
+  url: string;
+
+  @IsOptional()
+  @IsString()
+  descricao?: string;
+}
+
+class Certification {
+  @IsString()
+  nome: string;
+
+  @IsString()
+  orgao: string;
+
+  @IsNumber()
+  ano: number;
+
+  @IsOptional()
+  @IsString()
+  url?: string;
+}
+
+class Schedule {
+  @IsString()
+  segunda: string;
+
+  @IsString()
+  terca: string;
+
+  @IsString()
+  quarta: string;
+
+  @IsString()
+  quinta: string;
+
+  @IsString()
+  sexta: string;
+
+  @IsOptional()
+  @IsString()
+  sabado?: string;
+
+  @IsOptional()
+  @IsString()
+  domingo?: string;
+}
 
 export class CreateCorporationProfileDto {
+  @IsOptional()
   @IsString()
-  corpID: string;
+  banner_url?: string;
 
+  @IsOptional()
   @IsString()
-  Wallpaper_Url: string;
+  site?: string;
+
+  @IsOptional()
   @IsString()
-  site: string;
+  descricao?: string;
+
+  @IsOptional()
   @IsString()
-  descricao: string;
+  sobre?: string;
+
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => Schedule)
+  horario?: Schedule;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Certification)
+  certificacoes?: Certification[];
+
+  // ✅ Campos soltos, alinhados com a entidade
+  @IsOptional()
   @IsString()
-  sobre: string;
+  instagram?: string;
+
+  @IsOptional()
   @IsString()
-  horario: string;
+  facebook?: string;
+
+  @IsOptional()
   @IsString()
-  certificacoes: string;
+  linkedin?: string;
+
+  @IsOptional()
   @IsString()
-  redesSociais: string;
+  youtube?: string;
+
+  @IsOptional()
+  @IsString()
+  twitter?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => GalleryItem)
+  galeria?: GalleryItem[];
 }

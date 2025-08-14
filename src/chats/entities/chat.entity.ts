@@ -1,29 +1,34 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Corporation } from 'src/corporations/entities/corporation.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
+import { Contact } from 'src/contacts/entities/contact.entity';
 
-@Entity()
+@Entity('chat')
 export class Chat extends BaseEntity {
-  @Column()
-  remetenteID: string;
+  @Column({ type: 'text' })
+  mensagem: string;
 
-  @Column()
-  remetenteNome: string;
+  @Column({ default: false })
+  lida: boolean;
 
-  @Column()
-  destinatarioID: string;
+  @Column({ name: 'remetenteId' })
+  remetenteId: string;
 
-  @Column({ type: 'bytea' })
-  conteudo: Buffer;
+  @Column({ name: 'destinatarioId' })
+  destinatarioId: string;
 
-  @Column({ type: 'bytea' })
-  iv: Buffer;
+  @Column({ name: 'contactId', nullable: true })
+  contactId: string;
 
-  @ManyToOne(() => Corporation, (corporation) => corporation.mensagensEnviadas)
-  @JoinColumn({ name: 'remetenteID' })
+  @ManyToOne(() => Corporation, (corp) => corp.mensagensEnviadas)
+  @JoinColumn({ name: 'remetenteId' })
   remetente: Corporation;
 
-  @ManyToOne(() => Corporation, (corporation) => corporation.mensagensRecebidas)
-  @JoinColumn({ name: 'destinatarioID' })
+  @ManyToOne(() => Corporation, (corp) => corp.mensagensRecebidas)
+  @JoinColumn({ name: 'destinatarioId' })
   destinatario: Corporation;
+
+  @ManyToOne(() => Contact, (contact) => contact.chats, { nullable: true })
+  @JoinColumn({ name: 'contactId' })
+  contato: Contact;
 }
