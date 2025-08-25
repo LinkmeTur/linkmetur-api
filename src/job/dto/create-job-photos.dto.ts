@@ -1,7 +1,7 @@
-// dto/create-proposal-photos.dto.ts
+// dto/create-job-photos.dto.ts
 import { IsString, IsUrl, Length } from 'class-validator';
 
-export class CreateProposalPhotosDto {
+export class CreateJobPhotosDto {
   @IsUrl()
   photo_url: string;
 

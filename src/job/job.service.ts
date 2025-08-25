@@ -1,299 +1,144 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+// src/jobs/jobs.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
-
+import { Repository } from 'typeorm';
 import { Job } from './entities/job.entity';
+import { JobPhotos } from './entities/job_photos.entity';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
-import { JobPhotos } from './entities/job_photos.entity';
-import { JobEvaluation } from './entities/job_evaluation.entity';
+import { Corporation } from '../corporations/entities/corporation.entity';
 
 @Injectable()
-export class JobService {
+export class JobsService {
   constructor(
     @InjectRepository(Job)
     private readonly jobRepository: Repository<Job>,
     @InjectRepository(JobPhotos)
-    private readonly jobPhotosRepository: Repository<JobPhotos>,
-    @InjectRepository(JobEvaluation)
-    private readonly jobEvaluationRepository: Repository<JobEvaluation>,
+    private readonly photoRepository: Repository<JobPhotos>,
+    @InjectRepository(Corporation)
+    private readonly corpRepository: Repository<Corporation>,
   ) {}
 
-  async create(createJobDto: CreateJobDto): Promise<Job> {
-    try {
-      const { photos, ...newDTO } = createJobDto;
-
-      const job = this.jobRepository.create(newDTO);
-      const savedJob = await this.jobRepository.save(job);
-
-      if (photos) {
-        for (const photo of photos) {
-          const jobPhoto = this.jobPhotosRepository.create({
-            job_ID: savedJob.id,
-            photo_URL: photo.photo_URL,
-            photo_alt: photo.photo_alt,
-          });
-
-          await this.jobPhotosRepository.save(jobPhoto);
-        }
-
-        // Aguarda o salvamento de todas as fotos
-      }
-
-      return savedJob;
-    } catch (error) {
-      throw new HttpException(
-        `Erro ao criar job: ${error}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+  async create(createDto: CreateJobDto, corpId: string): Promise<Job> {
+    // Verifica se a corporation existe
+    const corporation = await this.corpRepository.findOne({
+      where: { id: corpId },
+    });
+    if (!corporation) {
+      throw new NotFoundException(
+        `Corporation com ID ${corpId} não encontrada.`,
       );
     }
+
+    // Cria as fotos, se fornecidas
+    let fotos: JobPhotos[] = [];
+    if (createDto.fotos?.length) {
+      fotos = createDto.fotos.map((foto) =>
+        this.photoRepository.create({
+          ...foto,
+          job_id: undefined, // será preenchido depois
+        }),
+      );
+      fotos = await this.photoRepository.save(fotos);
+    }
+
+    // Cria o job
+    const job = this.jobRepository.create({
+      ...createDto,
+      corp_id: corpId,
+      corporation,
+      fotos,
+    });
+
+    return await this.jobRepository.save(job);
   }
 
-  async findAll(data: {
-    page?: number;
-    limit?: number;
-  }): Promise<
-    { jobs: Job[]; totalRecords: number; totalPages: number } | Job[]
-  > {
-    const { page, limit } = data;
-    if (page && limit) {
-      const skip = (page - 1) * limit;
-      const [jobs, counter] = await this.jobRepository.findAndCount({
-        skip,
-        take: limit,
-        relations: {
-          photos: true,
-          evaluations: true,
-          corp: true,
-        },
-      });
-      const totalPages = Math.ceil(Number(counter) / Number(limit));
-      return { jobs, totalRecords: counter, totalPages };
-    }
+  async findAll(): Promise<Job[]> {
     return await this.jobRepository.find({
-      relations: {
-        photos: true,
-        evaluations: true,
-        corp: {
-          users: true,
-        },
-      },
+      where: { publicado: true },
+      relations: ['corporation', 'fotos'],
     });
   }
 
-  async findOne(id: string): Promise<Job | string> {
+  async findAllByCorporation(corpId: string): Promise<Job[]> {
+    return await this.jobRepository.find({
+      where: { corp_id: corpId },
+      relations: ['fotos'],
+    });
+  }
+
+  async findOne(id: string): Promise<Job> {
     const job = await this.jobRepository.findOne({
-      where: { id: id },
-      relations: {
-        photos: true,
-        evaluations: true,
-      },
+      where: { id, publicado: true },
+      relations: ['corporation', 'fotos', 'avaliacoes', 'avaliacoes.user'],
     });
 
     if (!job) {
-      throw new HttpException(
-        `Job with id ${id} not found!`,
-        HttpStatus.NOT_FOUND,
+      throw new NotFoundException(
+        `Job com ID ${id} não encontrado ou não publicado.`,
       );
     }
+
+    // Incrementa views
+    job.views += 1;
+    job.total_views += 1;
+    await this.jobRepository.save(job);
+
     return job;
   }
-  async findForCorporation(
+
+  async update(
     id: string,
-    page?: number,
-    limit?: number,
-  ): Promise<
-    { jobs: Job[]; totalRecords: number; totalPages: number } | Job[] | string
-  > {
-    if (page && limit) {
-      const skip = (page - 1) * limit;
-      const [jobs, total] = await this.jobRepository.findAndCount({
-        where: { corpId: id },
-        skip,
-        take: limit,
-        relations: {
-          photos: true,
-          evaluations: true,
-        },
-      });
-      console.log(jobs);
-      console.log(total);
-      if (!jobs) {
-        throw new HttpException(`Jobs  not found!`, HttpStatus.NOT_FOUND);
-      }
-      const totalPages = Math.ceil(Number(total) / Number(limit));
-
-      return { jobs, totalRecords: total, totalPages };
-    }
-    const jobs = await this.jobRepository.find({
-      where: { corpId: id },
-      relations: {
-        photos: true,
-        evaluations: true,
-      },
-    });
-
-    if (!jobs) {
-      throw new HttpException(`Jobs  not found!`, HttpStatus.NOT_FOUND);
-    }
-    return jobs;
-  }
-
-  async findFiltered(filters: {
-    nome_servico?: string;
-    categoria?: string;
-    localizacao?: string;
-    min_valor?: number;
-    max_valor?: number;
-    min_rating?: number;
-    orderBy?: 'relevance' | 'rating' | 'price-asc' | 'price-desc';
-    page: number;
-    limit: number;
-  }): Promise<{ jobs: Job[]; totalRecords: number; totalPages: number }> {
-    const where: any = {};
-    const order: any = {};
-    const { page, limit } = filters;
-
-    // Filtros iniciais
-    if (filters.nome_servico) {
-      where.nome_servico = ILike(`%${filters.nome_servico}%`);
-    }
-    if (filters.categoria) {
-      where.categoria = filters.categoria;
-    }
-    if (filters.min_valor) {
-      where.min_valor = MoreThanOrEqual(filters.min_valor);
-    }
-    if (filters.max_valor) {
-      where.max_valor = LessThanOrEqual(filters.max_valor);
-    }
-
-    // Busca todos os registros que atendem aos filtros principais
-    const allJobs = await this.jobRepository.find({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      where,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      order,
-      relations: { photos: true, evaluations: true, corp: true },
-    });
-
-    // Filtro por localização
-    let filteredJobs = allJobs;
-    if (filters.localizacao) {
-      filteredJobs = filteredJobs.filter(
-        (job) =>
-          job.corp.cidade.includes(filters.localizacao as string) ||
-          job.corp.estado.includes(filters.localizacao as string),
-      );
-    }
-
-    // Filtro por média de rating
-    if (filters.min_rating) {
-      filteredJobs = filteredJobs.filter((job) => {
-        const avgRating =
-          job.evaluations.reduce((sum, ev) => sum + ev.rating, 0) /
-            job.evaluations.length || 0;
-        return avgRating >= (filters.min_rating as number);
-      });
-    }
-
-    // Atualiza totalRecords e totalPages com base nos registros filtrados
-    const totalRecords = filteredJobs.length;
-    const totalPages = Math.ceil(totalRecords / limit);
-
-    // Aplica paginação manual com `slice()`
-    const skip = (page - 1) * limit;
-    const paginatedJobs = filteredJobs.slice(skip, skip + limit);
-
-    return { jobs: paginatedJobs, totalRecords, totalPages };
-  }
-  async findFilteredForCorp(
+    updateDto: UpdateJobDto,
     corpId: string,
-    filters: {
-      nome_servico?: string;
-      categoria?: string;
-      localizacao?: string;
-      min_valor?: number;
-      max_valor?: number;
-      min_rating?: number;
-      orderBy?: 'relevance' | 'rating' | 'price-asc' | 'price-desc';
-      page: number;
-      limit: number;
-    },
-  ): Promise<{ jobs: Job[]; totalRecords: number; totalPages: number }> {
-    const where: any = { corpId };
-    const order: any = {};
-    const { page, limit } = filters;
-
-    // Filtros iniciais
-    if (filters.nome_servico) {
-      where.nome_servico = ILike(`%${filters.nome_servico}%`);
-    }
-    if (filters.categoria) {
-      where.categoria = filters.categoria;
-    }
-    if (filters.min_valor) {
-      where.min_valor = MoreThanOrEqual(filters.min_valor);
-    }
-    if (filters.max_valor) {
-      where.max_valor = LessThanOrEqual(filters.max_valor);
-    }
-
-    // Busca todos os registros que atendem aos filtros principais
-    const allJobs = await this.jobRepository.find({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      where,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      order,
-      relations: { photos: true, evaluations: true, corp: true },
+  ): Promise<Job> {
+    const job = await this.jobRepository.findOne({
+      where: { id, corp_id: corpId },
+      relations: ['fotos'],
     });
 
-    // Filtro por localização
-    let filteredJobs = allJobs;
-    if (filters.localizacao) {
-      filteredJobs = filteredJobs.filter(
-        (job) =>
-          job.corp.cidade.includes(filters.localizacao as string) ||
-          job.corp.estado.includes(filters.localizacao as string),
-      );
-    }
-
-    // Filtro por média de rating
-    if (filters.min_rating) {
-      filteredJobs = filteredJobs.filter((job) => {
-        const avgRating =
-          job.evaluations.reduce((sum, ev) => sum + ev.rating, 0) /
-            job.evaluations.length || 0;
-        return avgRating >= (filters.min_rating as number);
-      });
-    }
-
-    // Atualiza totalRecords e totalPages com base nos registros filtrados
-    const totalRecords = filteredJobs.length;
-    const totalPages = Math.ceil(totalRecords / limit);
-
-    // Aplica paginação manual com `slice()`
-    const skip = (page - 1) * limit;
-    const paginatedJobs = filteredJobs.slice(skip, skip + limit);
-
-    return { jobs: paginatedJobs, totalRecords, totalPages };
-  }
-
-  async update(id: string, updateJobDto: UpdateJobDto): Promise<Job> {
-    const job = (await this.findOne(id)) as Job;
-    const updatedJob = Object.assign(job, updateJobDto);
-    return await this.jobRepository.save(updatedJob);
-  }
-
-  async remove(id: string) {
-    const job = await this.findOne(id);
     if (!job) {
-      throw new HttpException(
-        `Job with id ${id} not found!`,
-        HttpStatus.NOT_FOUND,
+      throw new NotFoundException(
+        `Job não encontrado ou você não tem permissão.`,
       );
     }
-    return await this.jobRepository.delete(id);
+
+    // Atualiza fotos se fornecido
+    if (updateDto.fotos) {
+      // Remove fotos antigas
+      await this.photoRepository.delete({ job_id: job.id });
+      // Salva novas
+      const novasFotos = updateDto.fotos.map((foto) =>
+        this.photoRepository.create({ ...foto, job_id: job.id }),
+      );
+      job.fotos = await this.photoRepository.save(novasFotos);
+    }
+
+    Object.assign(job, updateDto);
+    return await this.jobRepository.save(job);
+  }
+
+  async remove(id: string, corpId: string): Promise<void> {
+    const result = await this.jobRepository.delete({ id, corp_id: corpId });
+    if (result.affected === 0) {
+      throw new NotFoundException(`Job não encontrado ou sem permissão.`);
+    }
+  }
+
+  async findByCategory(categoria: string): Promise<Job[]> {
+    return await this.jobRepository.find({
+      where: { categoria, publicado: true },
+      relations: ['corporation', 'fotos'],
+    });
+  }
+
+  async findByLocation(cidade: string, estado: string): Promise<Job[]> {
+    return await this.jobRepository
+      .createQueryBuilder('job')
+      .innerJoin('job.corporation', 'corporation')
+      .where('job.publicado = true')
+      .andWhere('corporation.cidade ILIKE :cidade', { cidade: `%${cidade}%` })
+      .andWhere('corporation.estado = :estado', { estado })
+      .getMany();
   }
 }

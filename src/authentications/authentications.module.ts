@@ -7,6 +7,8 @@ import { UsersModule } from 'src/users/users.module';
 // import { JwtStrategy } from './sevices/JwtSrategy.service';
 import { CorporationsModule } from 'src/corporations/corporations.module';
 import { HttpModule } from '@nestjs/axios';
+import { JwtAuthGuard } from './sevices/jwt-guard.guad';
+import { JwtStrategy } from './strategies/JwtStrategy.service';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { HttpModule } from '@nestjs/axios';
     CorporationsModule,
   ],
   controllers: [AuthenticationsController],
-  providers: [AuthenticationsService],
+  providers: [AuthenticationsService, JwtAuthGuard, JwtStrategy],
   exports: [AuthenticationsService],
 })
 export class AuthenticationsModule {}

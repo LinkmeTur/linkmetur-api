@@ -1,21 +1,18 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from 'src/database/entities/baseEntity';
 import { Job } from './job.entity';
-@Entity()
+@Entity('job_photos')
 export class JobPhotos extends BaseEntity {
-  @Column({ nullable: false })
-  job_ID: string;
+  @Column({ type: 'uuid' })
+  job_id: string;
 
-  @Column({ type: 'bytea', nullable: true })
-  photo: Buffer;
-
-  @Column()
-  photo_URL: string;
-
-  @Column()
-  photo_alt: string;
-
-  @ManyToOne(() => Job, (job) => job.photos)
-  @JoinColumn({ name: 'job_ID' })
+  @ManyToOne(() => Job, (job) => job.fotos)
+  @JoinColumn({ name: 'job_id' })
   job: Job;
+
+  @Column({ type: 'text' })
+  photo_url: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  photo_alt: string;
 }

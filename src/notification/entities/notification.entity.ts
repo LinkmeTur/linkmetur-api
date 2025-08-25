@@ -10,25 +10,25 @@ import { Corporation } from 'src/corporations/entities/corporation.entity';
  */
 @Entity('notification')
 export class Notification extends BaseEntity {
+  @Column({ type: 'uuid' })
+  corp_id: string;
+
+  @ManyToOne(() => Corporation)
+  @JoinColumn({ name: 'corp_id' })
+  corporation: Corporation;
+
   @Column({ type: 'text' })
   mensagem: string;
 
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   lida: boolean;
 
-  @Column({ name: 'corpId' })
-  corpId: string;
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  tipo: string; // 'alerta', 'convite', 'proposta', etc
 
-  @ManyToOne(() => Corporation, (c) => c.notifications, { nullable: true })
-  @JoinColumn({ name: 'corpId' })
-  corp: Corporation;
+  @Column({ type: 'text', nullable: true })
+  link: string;
 
-  @Column({ nullable: true })
-  tipo: string; // 'proposta', 'mensagem', 'pedido', 'sistema'
-
-  @Column({ nullable: true })
-  link: string; // redirecionamento
-
-  @Column({ nullable: true })
-  metadata: string; // dados extras (ex: requestId, proposalId)
+  @Column({ type: 'jsonb', nullable: true })
+  metadata: Record<string, any>;
 }

@@ -2,10 +2,10 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { RequestForProposal } from './request-for-proposal.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
 
-@Entity()
+@Entity('request_photos')
 export class RequestPhotos extends BaseEntity {
   @Column({ nullable: false })
-  request_ID: string;
+  request_id: string;
 
   @Column({ nullable: true })
   photo_URL: string;
@@ -15,5 +15,5 @@ export class RequestPhotos extends BaseEntity {
 
   @ManyToOne(() => RequestForProposal, (request) => request.fotos)
   @JoinColumn({ name: 'request_ID' })
-  request: RequestForProposal;
+  rfp: RequestForProposal;
 }

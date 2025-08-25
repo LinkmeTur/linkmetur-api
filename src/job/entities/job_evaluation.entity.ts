@@ -1,17 +1,27 @@
 import { BaseEntity } from 'src/database/entities/baseEntity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Job } from './job.entity';
+import { User } from 'src/users/entities/user.entity';
 
-@Entity()
+@Entity('job_evaluation')
 export class JobEvaluation extends BaseEntity {
-  @Column({ nullable: false })
+  @Column({ type: 'uuid' })
   job_id: string;
-  @Column({ nullable: false })
+
+  @Column({ type: 'uuid' })
   user_id: string;
-  @Column({ nullable: false })
-  rating: number;
-  @Column({ nullable: false })
-  comment: string;
-  @ManyToOne(() => Job, (job) => job.evaluations)
+
+  @ManyToOne(() => Job, (job) => job.avaliacoes)
+  @JoinColumn({ name: 'job_id' })
   job: Job;
+
+  @ManyToOne(() => User, (user) => user)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
+
+  @Column({ type: 'smallint' })
+  rating: number; // 1 a 5
+
+  @Column({ type: 'text' })
+  comment: string;
 }

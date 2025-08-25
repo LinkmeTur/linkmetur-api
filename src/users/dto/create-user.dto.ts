@@ -1,53 +1,36 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import { Transform } from 'class-transformer';
+// dto/create-user.dto.ts
 import {
-  IsNotEmpty,
-  IsEmail,
   IsString,
-  MinLength,
-  MaxLength,
+  IsEmail,
+  IsPhoneNumber,
   IsInt,
-  Min,
-  Max,
-  IsEnum,
+  IsUUID,
+  Length,
   IsOptional,
-  ValidateIf,
 } from 'class-validator';
-import { UserRole } from '../types/enuns/user-role.enum';
 
 export class CreateUserDto {
-  @IsNotEmpty({ message: 'Nome é obrigatório' })
+  @IsString()
+  @Length(2, 100)
   nome: string;
 
   @IsEmail({}, { message: 'Email inválido' })
   email: string;
 
-  @IsNotEmpty({ message: 'Senha é obrigatória' })
-  senha: string;
-
-  @IsNotEmpty({ message: 'Telefone é obrigatório' })
   @IsString()
-  @MinLength(10, { message: 'O telefone deve conter no minimo 10 digitos' })
-  @MaxLength(13, { message: 'O telefone deve conter no maximo 13 digitos' })
+  @Length(8, 128, { message: 'A senha deve ter entre 8 e 128 caracteres' })
+  senha: string; // será transformada em hash_senha no service
+
+  @IsPhoneNumber('BR', { message: 'Telefone inválido (formato BR)' })
   telefone: string;
 
-  @IsNotEmpty({ message: 'Nível é obrigatório' })
-  @IsInt({ message: 'Nível deve ser um número inteiro' })
-  @Min(1, { message: 'Nível deve ser pelo menos 1' })
-  @Max(3, { message: 'Nível deve ser no máximo 3' })
-  @IsEnum(UserRole, {
-    message:
-      'Nível deve ser um dos seguintes: 1 (Admin), 2 (Funcionário), 3 (Visitante)',
-  })
-  @Transform(({ value }) => Number(value)) // Transformação personalizada para número
-  nivel: number; // Mantenha como number
-  @IsNotEmpty()
-  corpId: string;
+  @IsString()
   @IsOptional()
-  @ValidateIf((o: CreateUserDto) => !o.avatar)
-  avatar_url: string;
+  avatar_url?: string;
 
-  @IsOptional()
-  @ValidateIf((o: CreateUserDto) => !o.avatar_url)
-  avatar: Buffer;
+  @IsInt({ message: 'Nível deve ser um número inteiro' })
+  nivel: number;
+
+  @IsUUID('4', { message: 'corp_id deve ser um UUID válido' })
+  corp_id: string;
 }

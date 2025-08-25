@@ -1,31 +1,31 @@
 import { Chat } from 'src/chats/entities/chat.entity';
 import { Corporation } from 'src/corporations/entities/corporation.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 
 @Entity()
 export class Contact extends BaseEntity {
-  @Column()
-  corporationID: string;
+  @Column({ type: 'uuid' })
+  corporation_id: string;
 
-  @Column()
-  contactID: string;
+  @Column({ type: 'uuid' })
+  contact_id: string; // pode ser User.id ou Corporation.id
 
-  @Column({ default: false })
-  block_contact: boolean;
-
-  @Column({ default: false })
-  saved_contact: boolean;
-
-  @Column({ default: false })
-  favorited_contact: boolean;
-
-  @ManyToOne(() => Corporation, (corp) => corp.contatos)
+  @ManyToOne(() => Corporation, (corp) => corp.contacts)
+  @JoinColumn({ name: 'corporation_id' })
   corporation: Corporation;
 
-  @ManyToOne(() => Corporation)
-  contato: Corporation;
+  @ManyToOne(() => User, { nullable: true }) // se for contato de usuário
+  @JoinColumn({ name: 'contact_id' })
+  contactUser: User;
 
-  @OneToMany(() => Chat, (chat) => chat.contato)
-  chats: Chat[];
+  @Column({ type: 'boolean', default: false })
+  block_contact: boolean;
+
+  @Column({ type: 'boolean', default: true })
+  saved_contact: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  favorited_contact: boolean;
 }

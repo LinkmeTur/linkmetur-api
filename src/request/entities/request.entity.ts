@@ -1,45 +1,59 @@
+import { Corporation } from 'src/corporations/entities/corporation.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
+import { Job } from 'src/job/entities/job.entity';
 import { Proposal } from 'src/proposal/entities/proposal.entity';
 import { RequestForProposal } from 'src/request-for-proposal/entities/request-for-proposal.entity';
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class Request extends BaseEntity {
-  @Column()
-  jobID: string;
+  @Column({ type: 'uuid' })
+  rfp_id: string;
 
-  @Column()
-  nome_job: string;
+  @Column({ type: 'uuid' })
+  proposal_id: string;
 
-  @Column()
-  corpID: string;
+  @Column({ type: 'uuid' })
+  job_id: string;
 
-  @Column()
-  nome_corp: string;
+  @Column({ type: 'uuid' })
+  corp_id: string;
 
-  @Column()
-  prestadorID: string;
+  @Column({ type: 'uuid' })
+  user_id: string;
 
-  @Column()
-  nome_prestador: string;
-
-  @Column()
-  rfpID: string;
-
-  @OneToOne(() => RequestForProposal, (r) => r.request)
-  @JoinColumn({ name: 'rfpID' })
+  @ManyToOne(() => RequestForProposal, (rfp) => rfp.request)
+  @JoinColumn({ name: 'rfp_id' })
   rfp: RequestForProposal;
 
-  @Column()
-  proposalID: string;
-
-  @OneToOne(() => Proposal, (p) => p.request)
-  @JoinColumn({ name: 'proposalID' })
+  @ManyToOne(() => Proposal)
+  @JoinColumn({ name: 'proposal_id' })
   proposal: Proposal;
 
-  @Column()
+  @ManyToOne(() => Job)
+  @JoinColumn({ name: 'job_id' })
+  job: Job;
+
+  @ManyToOne(() => Corporation)
+  @JoinColumn({ name: 'corp_id' })
+  corporation: Corporation;
+
+  @ManyToOne(() => Corporation)
+  @JoinColumn({ name: 'user_id' })
+  user: Corporation;
+
+  @Column({ type: 'varchar', length: 255 })
+  nome_job: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  nome_corp: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  nome_prestador: string;
+
+  @Column({ type: 'timestamptz' })
   prazo: Date;
 
-  @Column()
-  status: string;
+  @Column({ type: 'varchar', length: 20 })
+  status: string; // 'ativo', 'concluído', 'cancelado'
 }

@@ -1,61 +1,52 @@
+// src/jobs/dto/create-job.dto.ts
 import {
-  IsNumber,
   IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsBoolean,
+  IsNumber,
   IsArray,
+  IsOptional,
   ValidateNested,
+  IsEnum,
+  IsUrl,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { JobPhotos } from '../entities/job_photos.entity';
+
+import { CreateJobPhotosDto } from './create-job-photos.dto';
 
 export class CreateJobDto {
-  @IsString({ message: 'O corp_Id deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'O corp_Id é obrigatório.' })
-  corpId: string;
-
-  @IsString({ message: 'O servico deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'O servico é obrigatório.' })
+  @IsString()
   nome_servico: string;
 
-  @IsString({ message: 'A categoria deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'A categoria é obrigatória.' })
+  @IsString()
   categoria: string;
 
-  @IsString({ message: 'A sub_categoria deve ser uma string válida.' })
+  @IsString()
   sub_categoria: string;
 
-  @IsString({ message: 'A descrição deve ser uma string válida.' })
+  @IsString()
   descricao: string;
 
-  @IsNumber({}, { message: 'O valor mínimo deve ser um número.' })
-  @IsNotEmpty({ message: 'O valor mínimo é obrigatório.' })
+  @IsNumber()
   min_valor: number;
 
-  @IsNumber({}, { message: 'O valor máximo deve ser um número.' })
-  @IsNotEmpty({ message: 'O valor máximo é obrigatório.' })
+  @IsNumber()
   max_valor: number;
 
-  @IsOptional()
-  @IsString({ message: 'A URL do vídeo deve ser uma string válida.' })
-  video_url?: string;
+  @IsUrl()
+  video_url: string;
 
-  @IsOptional()
-  @IsString({ message: 'As certificações devem ser uma string válida.' })
-  certificacoes?: string;
+  @IsArray()
+  @IsString({ each: true })
+  certificacoes: string[];
 
-  @IsString({ message: 'A disponibilidade deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'A disponibilidade é obrigatória.' })
+  @IsString()
+  @IsEnum(['disponível', 'indisponível', 'sob consulta'])
   disponibilidade: string;
 
-  @IsBoolean({ message: 'O campo publicado deve ser um valor booleano.' })
-  @IsNotEmpty({ message: 'O campo publicado é obrigatório.' })
-  publicado: boolean;
-
-  @IsArray({ message: 'As fotos devem ser um array válido.' })
   @IsOptional()
+  @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => JobPhotos)
-  photos?: JobPhotos[];
+  @Type(() => CreateJobPhotosDto)
+  fotos?: CreateJobPhotosDto[];
+
+  // O `corp_id` virá do contexto (JWT ou header), não do body
 }

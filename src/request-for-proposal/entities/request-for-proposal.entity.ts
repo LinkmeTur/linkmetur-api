@@ -1,38 +1,69 @@
 import { BaseEntity } from 'src/database/entities/baseEntity';
 import { Proposal } from 'src/proposal/entities/proposal.entity';
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { RequestPhotos } from './request-photos.entity';
 import { Request } from 'src/request/entities/request.entity';
+import { Corporation } from '../../corporations/entities/corporation.entity';
+import { Job } from 'src/job/entities/job.entity';
 
-@Entity()
+@Entity('request_for_proposal')
 export class RequestForProposal extends BaseEntity {
-  @Column()
-  corpID: string;
-  @Column({ nullable: true, default: null })
-  prestadorID: string;
-  @Column({ nullable: true, default: null })
-  jobID: string;
-  @Column()
+  @Column({ type: 'uuid' })
+  corp_id: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  prestador_id: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  job_id: string;
+
+  @ManyToOne(() => Corporation, (corp) => corp.rfps)
+  @JoinColumn({ name: 'corp_id' })
+  corporation: Corporation;
+
+  @ManyToOne(() => Corporation, { nullable: true })
+  @JoinColumn({ name: 'prestador_id' })
+  prestador: Corporation;
+
+  @ManyToOne(() => Job, { nullable: true })
+  @JoinColumn({ name: 'job_id' })
+  job: Job;
+
+  @Column({ type: 'varchar', length: 255 })
   titulo: string;
-  @Column()
+
+  @Column({ type: 'text' })
   descricao: string;
-  @Column()
+
+  @Column({ type: 'text' })
   detalhes: string;
-  @Column()
-  valor_medio: string;
-  @Column()
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  valor_medio: number;
+
+  @Column({ type: 'varchar', length: 50 })
   tipo: string;
-  @Column({ nullable: true })
+
+  @Column({ type: 'timestamptz', nullable: true })
   prazo: Date;
-  @Column({ default: 'aberto' })
-  status: string;
 
-  @OneToMany(() => RequestPhotos, (f) => f.request)
-  fotos: RequestPhotos[];
+  @Column({ type: 'varchar', length: 20 })
+  status: string; // 'aberto', 'encerrado', etc
 
-  @OneToMany(() => Proposal, (p) => p.rfp)
+  @OneToMany(() => Proposal, (proposal) => proposal.rfp)
   proposals: Proposal[];
 
-  @OneToOne(() => Request, (r) => r.rfp)
+  @OneToOne(() => Request, (request) => request.rfp)
   request: Request;
+
+  @OneToMany(() => RequestPhotos, (photo) => photo.rfp)
+  @JoinColumn({ name: 'rfp_id' })
+  fotos: RequestPhotos[];
 }

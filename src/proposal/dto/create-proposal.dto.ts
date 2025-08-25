@@ -1,38 +1,55 @@
-import { IsNotEmpty, IsOptional, IsString, IsDate } from 'class-validator';
-import { CreateRequestForProposalDto } from 'src/request-for-proposal/dto/create-request-for-proposal.dto';
-import { ProposalPhotosDto } from './proposal-photos.dto';
+// dto/create-proposal.dto.ts
+import {
+  IsString,
+  IsUUID,
+  IsDecimal,
+  IsOptional,
+  IsDate,
+  IsBoolean,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateProposalPhotosDto } from './proposal-photos.dto';
+
 export class CreateProposalDto {
-  @IsNotEmpty()
   @IsString()
-  reqId: string;
+  @IsUUID()
+  rfp_id: string;
 
-  @IsNotEmpty()
   @IsString()
-  corpID: string;
+  @IsUUID()
+  corp_id: string;
 
-  @IsNotEmpty()
   @IsString()
-  resumo_proposta: string;
-
-  @IsNotEmpty()
-  @IsString()
-  valor_proposta: string;
-
+  @IsUUID()
   @IsOptional()
-  @IsString()
-  observações: string;
+  user_id?: string;
 
-  @IsNotEmpty()
+  @IsString()
+  @IsOptional()
+  resumo_proposta?: string;
+
+  @IsDecimal({ decimal_digits: '2' })
+  valor_proposta: number;
+
+  @IsString()
+  @IsOptional()
+  observacoes?: string;
+
   @IsDate()
-  prazo: Date;
+  @IsOptional()
+  prazo?: Date;
 
-  @IsNotEmpty()
   @IsString()
-  status: string;
-
   @IsOptional()
-  request: CreateRequestForProposalDto;
+  status?: string; // 'enviada'
 
+  @IsBoolean()
   @IsOptional()
-  fotos: ProposalPhotosDto[];
+  selecionado?: boolean;
+
+  @ValidateNested({ each: true })
+  @Type(() => CreateProposalPhotosDto)
+  @IsOptional()
+  fotos?: CreateProposalPhotosDto[];
 }

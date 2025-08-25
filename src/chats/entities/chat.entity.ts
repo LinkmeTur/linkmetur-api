@@ -5,36 +5,36 @@ import { Contact } from 'src/contacts/entities/contact.entity';
 
 @Entity('chat')
 export class Chat extends BaseEntity {
-  @Column({ type: 'bytea' })
-  conteudo: Buffer;
+  @Column({ type: 'uuid' })
+  remetente_id: string;
 
-  @Column({ type: 'bytea' })
-  iv: Buffer;
+  @Column({ type: 'uuid' })
+  destinatario_id: string;
 
-  @Column({ default: false })
-  lida: boolean;
+  @Column({ type: 'uuid', nullable: true })
+  contact_id: string;
 
-  @Column({ name: 'remetenteId' })
-  remetenteId: string;
-
-  @Column()
-  remetenteNome: string;
-
-  @Column({ name: 'destinatarioId' })
-  destinatarioId: string;
-
-  @Column({ name: 'contactId', nullable: true })
-  contactId: string;
-
-  @ManyToOne(() => Corporation, (corp) => corp.mensagensEnviadas)
-  @JoinColumn({ name: 'remetenteId' })
+  @ManyToOne(() => Corporation, { eager: true })
+  @JoinColumn({ name: 'remetente_id' })
   remetente: Corporation;
 
-  @ManyToOne(() => Corporation, (corp) => corp.mensagensRecebidas)
-  @JoinColumn({ name: 'destinatarioId' })
+  @ManyToOne(() => Corporation, { eager: true })
+  @JoinColumn({ name: 'destinatario_id' })
   destinatario: Corporation;
 
-  @ManyToOne(() => Contact, (contact) => contact.chats, { nullable: true })
-  @JoinColumn({ name: 'contactId' })
-  contato: Contact;
+  @ManyToOne(() => Contact, { nullable: true })
+  @JoinColumn({ name: 'contact_id' })
+  contact: Contact;
+
+  @Column({ type: 'varchar', length: 100 })
+  remetente_nome: string;
+
+  @Column({ type: 'text' }) // conteúdo criptografado
+  conteudo: string;
+
+  @Column({ type: 'bytea' })
+  iv: Buffer; // initialization vector
+
+  @Column({ type: 'boolean', default: false })
+  lida: boolean;
 }

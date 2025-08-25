@@ -9,106 +9,86 @@ import {
 } from 'typeorm';
 import { BaseEntity } from '../../database/entities/baseEntity';
 import { User } from '../../users/entities/user.entity';
-import { Chat } from '../../chats/entities/chat.entity';
 import { Contact } from '../../contacts/entities/contact.entity';
 import { Job } from '../../job/entities/job.entity';
-import { CorporationProfile } from '../../corporation-profile/entities/corporation-profile.entity';
-import { Notification } from 'src/notification/entities/notification.entity';
+import { CorporationProfile } from './corporation-profile.entity';
+import { RequestForProposal } from 'src/request-for-proposal/entities/request-for-proposal.entity';
 
-export enum CorporationTipo {
-  TURISMO = 'T',
-  PRESTADOR = 'P',
-}
-
-@Index('IDX_CORP_CNPJ', ['cnpj'], { unique: true })
-@Index('IDX_CORP_TIPO', ['tipo'])
-@Index('IDX_CORP_CIDADE', ['cidade'])
-@Index('IDX_CORP_ESTADO', ['estado'])
 @Entity('corporation')
+@Index(['cnpj'], { unique: true })
+@Index(['cidade', 'estado'])
+@Index('IDX_CORPORATION_LOCALIZACAO', { synchronize: false })
 export class Corporation extends BaseEntity {
   @Column({ nullable: true })
   logo_url: string;
 
-  @Index({ unique: true })
-  @Column()
+  @Column({ type: 'char', length: 14, unique: true })
   cnpj: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   razao_social: string;
 
-  @Column()
-  natureza_juridica: string;
-
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   nome_fantasia: string;
 
-  @Column()
+  @Column({ type: 'date' })
   data_inicio_atividade: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 7 })
   cnae_fiscal_principal: string;
 
-  @Index()
-  @Column()
+  @Column({ type: 'varchar', length: 50 })
   tipo: string;
 
-  @Column({ nullable: true })
-  tags: string;
+  @Column('text', { array: true, nullable: true })
+  tags: string[];
 
-  @Column()
+  @Column({ type: 'varchar', length: 20 })
   telefone: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 10 })
   cep: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   endereco: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 10, nullable: true })
   numero: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   bairro: string;
 
-  @Index()
-  @Column()
+  @Column({ type: 'varchar', length: 100 })
   cidade: string;
 
-  @Index()
-  @Column()
+  @Column({ type: 'char', length: 2 })
   estado: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 50, default: 'Brasil' })
   pais: string;
 
-  @Column()
+  @Column({ nullable: true }) // requer PostGIS
   localizacao: string;
 
-  @Column({ nullable: true })
-  profileId: string;
+  @Column({ type: 'uuid', nullable: true })
+  profile_id: string;
 
-  @OneToOne(() => CorporationProfile, (profile) => profile.corp)
-  @JoinColumn({ name: 'profileId' })
+  @OneToOne(() => CorporationProfile, (profile) => profile.corporation)
+  @JoinColumn({ name: 'profile_id' })
   profile: CorporationProfile;
 
-  @OneToMany(() => User, (user) => user.corp)
-  users: Array<User>;
+  @OneToMany(() => User, (user) => user.corporation)
+  users: User[];
 
-  @OneToMany(() => Chat, (chat) => chat.remetente)
-  mensagensEnviadas: Array<Chat>;
+  @OneToMany(() => Job, (job) => job.corporation)
+  jobs: Job[];
 
-  @OneToMany(() => Chat, (chat) => chat.destinatario)
-  mensagensRecebidas: Array<Chat>;
+  @OneToMany(() => RequestForProposal, (rfp) => rfp.corporation)
+  rfps: RequestForProposal[];
 
-  @OneToMany(() => Contact, (contato) => contato.corporation)
-  contatos: Array<Contact>;
-
-  @OneToMany(() => Notification, (n) => n.corp)
-  notifications: Array<Notification>;
-
-  @OneToMany(() => Job, (job) => job.corp)
-  jobs: Array<Job>;
+  @OneToMany(() => Contact, (contact) => contact.corporation)
+  contacts: Contact[];
 }

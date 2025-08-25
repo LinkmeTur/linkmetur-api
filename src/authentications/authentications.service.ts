@@ -1,130 +1,153 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-// import { HttpService } from '@nestjs/axios';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as crypto from 'node:crypto';
-import { createTransport } from 'nodemailer';
-import { CreateTwoFactorDto } from './dto/create-twofactor.dto';
+import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
-
+import { Authentication } from './entities/authentication.entity';
+import { Repository } from 'typeorm';
+import { LoginDto } from './dto/login.dto';
+import { User } from 'src/users/entities/user.entity';
+import bcrypt from 'bcryptjs';
+import { randomBytes } from 'node:crypto';
 @Injectable()
 export class AuthenticationsService {
   constructor(
+    private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly userService: UsersService,
-    // private readonly httpService: HttpService,
+    @InjectRepository(Authentication)
+    private readonly authRepo: Repository<Authentication>,
   ) {}
 
-  async signin(email: string, senha: string) {
-    const user = await this.userService.findOneByEmailAndPass(email, senha);
-    if (!user) {
-      throw new HttpException(
-        'Credenciais inválidas!',
-        HttpStatus.UNAUTHORIZED,
-      );
+  async login(
+    loginDto: LoginDto,
+  ): Promise<{ user: User; access_token: string; refresh_token: string }> {
+    const user = await this.validateUser(loginDto.email, loginDto.senha);
+    const auth = await this.authRepo.findOne({ where: { user_id: user.id } });
+    if (!auth) {
+      throw new UnauthorizedException('Perfil de autenticação não encontrado.');
     }
-    const payload = { id: user.id, email: user.email };
-    const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.SECRETJWT,
+    // Aqui você deveria verificar a senha (hash) com bcrypt
+    const payload = { email: user.email, sub: user.id };
+    return {
+      user,
+      access_token: this.jwtService.sign(payload, { expiresIn: '15m' }),
+      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
+    };
+  }
+  async validateUser(email: string, senha: string): Promise<User> {
+    try {
+      const user = await this.usersService.findByEmail(email);
+      const isMatch = await bcrypt.compare(senha, user.hash_senha);
+      if (!isMatch) throw new UnauthorizedException('Credenciais inválidas');
+      return user;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new UnauthorizedException('Credenciais inválidas');
+      }
+      throw error;
+    }
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    const user = await this.usersService.findByEmail(email);
+    const token = randomBytes(32).toString('hex');
+    const expiraEm = new Date();
+    expiraEm.setMinutes(expiraEm.getMinutes() + 15);
+
+    await this.authRepo.update(user.id, {
+      token_recuperacao: token,
+      expiracao_token: expiraEm,
     });
-    console.log(accessToken);
-    console.log(user);
-    return { usuario: user, token: accessToken };
+
+    // Aqui você chama um serviço de email
+    console.log(
+      `Recuperação de senha: https://seuapp.com/reset?token=${token}`,
+    );
   }
 
-  async verificationTwoFactorCode({ data }: CreateTwoFactorDto) {
-    try {
-      const code =
-        crypto
-          .randomBytes(3)
-          .toString('hex')
-          .toUpperCase()
-          .match(/.{1,3}/g)
-          ?.join('-') ?? '';
+  /**
+   * Reseta senha com token
+   */
+  async resetPassword(token: string, novaSenha: string): Promise<void> {
+    const auth = await this.authRepo.findOne({
+      where: { token_recuperacao: token },
+      relations: ['user'],
+    });
 
-      const transporter = createTransport({
-        service: 'gmail',
-        host: 'smtp.gmail.com',
-        port: 465,
-
-        auth: {
-          user: process.env.GMAIL_USER, // Altere para seu email
-          pass: process.env.GMAIL_PASS, // Altere para sua senha (ou token de aplicação seguro)
-        },
-      });
-
-      const mailOptions = {
-        from: process.env.GMAIL_USER,
-        to: data,
-        subject: 'Seu código de verificação',
-        text: `Seu código de verificação é: ${code}`,
-      };
-      await transporter.sendMail(mailOptions);
-      return code;
-    } catch (error) {
-      if (error) {
-        console.error('Erro ao enviar código:', error);
-
-        throw new HttpException(
-          'Erro ao enviar codigo',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+    if (!auth) {
+      throw new UnauthorizedException('Token inválido');
     }
+
+    if (!auth.expiracao_token || new Date() > auth.expiracao_token) {
+      throw new UnauthorizedException('Token expirado');
+    }
+
+    await this.usersService.update(auth.user.id, { senha: novaSenha });
+
+    await this.authRepo.update(auth.user_id, {
+      token_recuperacao: null,
+      expiracao_token: null,
+    });
   }
 
-  async recoveryPassword(email: string) {
-    try {
-      const user = await this.userService.findOneByEmail(email);
-
-      if (!user) {
-        throw new Error('Email não encontrado!');
-      }
-      const code = crypto.randomBytes(12).toString('hex');
-
-      const transporter = createTransport({
-        service: 'gmail',
-        host: 'smtp.gmail.com',
-        port: 465,
-
-        auth: {
-          user: process.env.GMAIL_USER, // Altere para seu email
-          pass: process.env.GMAIL_PASS, // Altere para sua senha (ou token de aplicação seguro)
-        },
-      });
-
-      const mailOptions = {
-        from: process.env.GMAIL_USER,
-        to: user.email,
-        subject: '🔐 Redefinição de senha',
-        html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; text-align: center; border: 1px solid #ddd; border-radius: 10px;">
-            <h2 style="color: #007bff;">Recuperação de senha</h2>
-            <p style="font-size: 16px; color: #333;">Olá,</p>
-            <p style="font-size: 16px; color: #333;">
-                Recebemos uma solicitação para redefinir sua senha. Se foi você quem solicitou, clique no botão abaixo para continuar.
-            </p>
-            <a href="https://app.linkmetur.com.br/recover-pass/${user.id}/${code}${user.created_at.toISOString()}/${user.nome}" style="display: inline-block; background-color: #007bff; color: white; padding: 12px 20px; font-size: 16px; text-decoration: none; border-radius: 5px;">
-                Redefinir senha
-            </a>
-            <p style="font-size: 14px; color: #777; margin-top: 10px;">
-                Se não foi você quem solicitou a alteração, ignore este e-mail. Sua senha permanecerá segura.  
-            </p>
-            <hr style="margin: 20px 0;">
-            <p style="font-size: 12px; color: #999;">Este é um e-mail automático, por favor, não responda.</p>
-        </div>
-    `,
-      };
-
-      await transporter.sendMail(mailOptions);
-      return {
-        status: HttpStatus.OK,
-        Message: 'Email de recuperação enviado!',
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        return { status: HttpStatus.NOT_FOUND, Message: error.message };
-      }
-      throw new HttpException('Erro ao enviar codigo', HttpStatus.BAD_REQUEST);
+  /**
+   * Ativa ou desativa 2FA
+   */
+  async toggle2FA(
+    userId: string,
+    ativar: boolean,
+  ): Promise<{ codigo_2fa?: string }> {
+    const auth = await this.authRepo.findOne({ where: { user_id: userId } });
+    if (!auth) {
+      throw new NotFoundException('Autenticação não encontrada');
     }
+
+    if (ativar && !auth.codigo_2fa) {
+      const codigo = this.gerarCodigo2FA();
+      const expiraEm = new Date();
+      expiraEm.setMinutes(expiraEm.getMinutes() + 10);
+
+      auth.codigo_2fa = codigo;
+      auth.expiracao_2fa = expiraEm;
+      auth.dois_fatores_ativo = false; // ainda não ativado
+
+      await this.authRepo.save(auth);
+      return { codigo_2fa: codigo };
+    }
+
+    auth.dois_fatores_ativo = ativar;
+    if (!ativar) {
+      auth.codigo_2fa = null;
+      auth.expiracao_2fa = null;
+    }
+
+    await this.authRepo.save(auth);
+    return {};
+  }
+
+  /**
+   * Verifica código 2FA
+   */
+  async verificar2FA(userId: string, codigo: string): Promise<boolean> {
+    const auth = await this.authRepo.findOne({ where: { user_id: userId } });
+    if (!auth || !auth.codigo_2fa || !auth.expiracao_2fa) {
+      return false;
+    }
+
+    const valido =
+      codigo === auth.codigo_2fa && new Date() < auth.expiracao_2fa;
+    if (valido && !auth.dois_fatores_ativo) {
+      auth.dois_fatores_ativo = true;
+      await this.authRepo.save(auth);
+    }
+
+    return valido;
+  }
+
+  private gerarCodigo2FA(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // 6 dígitos
   }
 }

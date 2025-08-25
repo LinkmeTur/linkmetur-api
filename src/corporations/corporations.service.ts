@@ -1,17 +1,18 @@
 import {
   Injectable,
+  ConflictException,
+  NotFoundException,
   HttpException,
   HttpStatus,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Corporation } from './entities/corporation.entity';
+import { HttpService } from '@nestjs/axios';
+import { CorporationProfile } from 'src/corporations/entities/corporation-profile.entity';
 import { CreateCorporationDto } from './dto/create-corporation.dto';
 import { UpdateCorporationDto } from './dto/update-corporation.dto';
-import { Corporation } from './entities/corporation.entity';
 import { firstValueFrom } from 'rxjs';
-import { HttpService } from '@nestjs/axios';
-import { CorporationProfile } from 'src/corporation-profile/entities/corporation-profile.entity';
 import { CnpjResponse } from './types/cnpj.types';
 import { CepResponse } from './types/cep.types';
 
@@ -25,11 +26,44 @@ export class CorporationsService {
     private readonly httpService: HttpService, // ✅ Injeção correta
   ) {}
 
-  async create(
-    createCorporationDto: CreateCorporationDto,
-  ): Promise<Corporation> {
-    const corporation = this.corpRepo.create(createCorporationDto);
-    return await this.corpRepo.save(corporation);
+  async create(createCorporationDto: CreateCorporationDto) {
+    const isExisting = await this.corpRepo.findOne({
+      where: { cnpj: createCorporationDto.cnpj },
+    });
+    if (isExisting) {
+      throw new ConflictException(
+        `CNPJ ${createCorporationDto.cnpj} já cadastrado.`,
+      );
+    }
+    let profile: CorporationProfile | undefined;
+    if (createCorporationDto.profile) {
+      profile = this.profileRepo.create({
+        ...createCorporationDto.profile,
+        corp_id: undefined,
+      });
+      profile = await this.profileRepo.save(profile);
+      console.log('Creating profile:', profile);
+    }
+    console.log('Creating corporation with profile:', profile?.id);
+    const newCorporation = this.corpRepo.create({
+      ...createCorporationDto,
+      localizacao: JSON.stringify(createCorporationDto.localizacao),
+    });
+    const corporation = await this.corpRepo.save(newCorporation);
+    console.log('Creating corporation:', corporation);
+    if (profile && corporation) {
+      await this.profileRepo.update(profile.id, {
+        corp_id: corporation.id,
+      });
+      console.log('Updated profile with corporation:', profile);
+
+      await this.corpRepo.update(corporation.id, {
+        profile_id: profile?.id,
+        profile,
+      });
+      console.log('Updated corporation with profile:', corporation);
+    }
+    return corporation;
   }
 
   async findAll(): Promise<Corporation[]> {
@@ -38,10 +72,13 @@ export class CorporationsService {
         users: true,
         profile: true,
         jobs: true,
+        rfps: true,
+        contacts: true,
       },
     });
     return corporations;
   }
+
   async findForType(tipo: string): Promise<Corporation[]> {
     const corporations = await this.corpRepo.find({
       where: { tipo: tipo },
@@ -68,18 +105,45 @@ export class CorporationsService {
   }
 
   async findByCnpj(cnpj: string): Promise<Corporation> {
-    const corp = await this.corpRepo.findOne({ where: { cnpj } });
+    const corp = await this.corpRepo.findOne({
+      where: { cnpj },
+      relations: {
+        users: true,
+        profile: true,
+      },
+    });
     if (!corp) {
       throw new NotFoundException(`Empresa com CNPJ ${cnpj} não encontrada`);
     }
     return corp;
   }
 
+  async findByNameCorporation(name: string): Promise<Corporation[]> {
+    const corporations = await this.corpRepo.find({
+      where: [{ razao_social: name }, { nome_fantasia: name }],
+      relations: {
+        users: true,
+        profile: true,
+        jobs: true,
+        rfps: true,
+        contacts: true,
+      },
+    });
+    return corporations;
+  }
+
   async update(
     id: string,
     updateCorporationDto: UpdateCorporationDto,
   ): Promise<Corporation | string> {
-    await this.corpRepo.update(id, updateCorporationDto);
+    let updateData;
+    if (updateCorporationDto.localizacao) {
+      updateData = {
+        ...updateCorporationDto,
+        localizacao: JSON.stringify(updateCorporationDto.localizacao),
+      };
+    }
+    await this.corpRepo.update(id, updateData);
     return this.findOne(id);
   }
 

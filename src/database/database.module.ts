@@ -2,7 +2,7 @@ import { Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Chat } from 'src/chats/entities/chat.entity';
 import { Contact } from 'src/contacts/entities/contact.entity';
-import { CorporationProfile } from 'src/corporation-profile/entities/corporation-profile.entity';
+import { CorporationProfile } from 'src/corporations/entities/corporation-profile.entity';
 import { Corporation } from 'src/corporations/entities/corporation.entity';
 import { Job } from 'src/job/entities/job.entity';
 import { JobEvaluation } from 'src/job/entities/job_evaluation.entity';

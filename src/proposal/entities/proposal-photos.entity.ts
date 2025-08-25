@@ -5,16 +5,16 @@ import { Proposal } from './proposal.entity';
 
 @Entity()
 export class ProposalPhotos extends BaseEntity {
-  @Column({ nullable: false })
-  proposal_ID: string;
+  @Column({ type: 'uuid' })
+  proposal_id: string;
 
-  @Column({ nullable: true })
-  photo_URL: string;
-
-  @Column()
-  photo_alt: string;
-
-  @ManyToOne(() => Proposal, (p) => p.fotos)
-  @JoinColumn({ name: 'proposal_ID' })
+  @ManyToOne(() => Proposal, (proposal) => proposal.fotos)
+  @JoinColumn({ name: 'proposal_id' })
   proposal: Proposal;
+
+  @Column({ type: 'text' })
+  photo_url: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  photo_alt: string;
 }

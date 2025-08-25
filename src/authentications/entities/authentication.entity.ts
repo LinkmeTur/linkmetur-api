@@ -1,55 +1,33 @@
-import {
-  Entity,
-  Column,
-  OneToOne,
-  JoinColumn,
-  BeforeInsert,
-  BeforeUpdate,
-  PrimaryColumn,
-} from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn, PrimaryColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import bcrypt from 'bcrypt';
 
 @Entity('authentication')
 export class Authentication {
-  @PrimaryColumn()
-  userId: string;
+  @PrimaryColumn('uuid')
+  user_id: string;
 
-  @OneToOne(() => User)
-  @JoinColumn({ name: 'userId' })
+  @OneToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ length: 255 })
-  hash_senha: string;
+  @Column({ type: 'text', nullable: true })
+  token_recuperacao: string | null;
 
-  @Column({ nullable: true })
-  token_recuperacao: string;
+  @Column({ type: 'timestamptz', nullable: true })
+  expiracao_token: Date | null;
 
-  @Column({ nullable: true })
-  expiracao_token: Date;
-
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   email_verificado: boolean;
 
-  @Column({ nullable: true })
-  codigo_2fa: string;
+  @Column({ type: 'text', nullable: true })
+  codigo_2fa: string | null;
 
-  @Column({ default: false })
+  @Column({ type: 'timestamptz', nullable: true })
+  expiracao_2fa: Date | null;
+
+  @Column({ type: 'boolean', default: false })
   dois_fatores_ativo: boolean;
 
-  @BeforeInsert()
-  @BeforeUpdate()
-  async hashRecoveryToken() {
-    if (this.token_recuperacao && !this.token_recuperacao.startsWith('$2b$')) {
-      const rounds = 10;
-      this.token_recuperacao = await bcrypt.hash(
-        this.token_recuperacao,
-        rounds,
-      );
-    }
-  }
-
-  async validateRecoveryToken(token: string): Promise<boolean> {
-    return bcrypt.compare(token, this.token_recuperacao);
-  }
+  @Column({ type: 'text', array: true, default: [] })
+  dispositivos_confiaveis: string[]; // IPs ou fingerprints
 }

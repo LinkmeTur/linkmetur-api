@@ -1,79 +1,126 @@
 import {
   Controller,
-  // Get,
   Post,
   Body,
-  UsePipes,
-  ValidationPipe,
-  // Patch,
-  // Param,
-  // Delete,
+  Get,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Query,
 } from '@nestjs/common';
+import { ApiTags, ApiBody, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { LoginDto } from './dto/login.dto';
+import { Enable2FADto } from './dto/enable-2fa.dto';
+import { User } from '../users/entities/user.entity';
 import { AuthenticationsService } from './authentications.service';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from './sevices/jwt-guard.guad';
+import { CurrentUser } from './sevices/current-user.decorator';
+import { SignupDto } from './dto/signup.dto';
 
-import { CreateTwoFactorDto } from './dto/create-twofactor.dto';
-
-import { RecoveryPasswordDto } from './dto/recovary-password.dto';
-
-@ApiBearerAuth('token')
-@ApiTags('authentications')
-@Controller('authentications')
+@ApiTags('Auth')
+@Controller('auth')
 export class AuthenticationsController {
-  constructor(
-    private readonly authenticationsService: AuthenticationsService,
-  ) {}
-  @Post()
-  @ApiOperation({ summary: 'login' })
-  @ApiBody({
-    description: 'Autenticação de usuário',
-    examples: {
-      login: {
-        value: {
-          email: 'string',
-          senha: 'string',
-        },
-      },
-    },
+  constructor(private readonly authService: AuthenticationsService) {}
+
+  // 🔐 LOGIN
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    schema: { example: { access_token: '...', refresh_token: '...' } },
   })
-  signWithEmailAndPass(
-    @Body() data: { email: 'string'; senha: 'string' },
-  ): Promise<any> {
-    return this.authenticationsService.signin(data.email, data.senha);
+  async login(@Body() dto: LoginDto) {
+    return await this.authService.login(dto);
   }
 
-  @Post('verificationTwoFactorCode')
-  @UsePipes(new ValidationPipe())
-  @ApiOperation({ summary: 'Cria um novo usuário' })
+  // 📧 RECUPERAÇÃO DE SENHA
+  @Post('request-reset')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({
-    description: 'Two Factor Code Verification',
-    type: CreateTwoFactorDto,
-    examples: {
-      exemplo1: {
-        value: {
-          data: 'string',
-        },
-      },
-    },
+    schema: { properties: { email: { type: 'string', format: 'email' } } },
   })
-  verificationTwoFactorCode(@Body() factor: CreateTwoFactorDto): Promise<any> {
-    return this.authenticationsService.verificationTwoFactorCode(factor);
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
+  async requestPasswordReset(@Body('email') email: string) {
+    await this.authService.requestPasswordReset(email);
   }
 
-  @Post('recovery-pass')
-  @ApiOperation({ summary: 'Ateração de senha' })
+  // 🔁 RESETAR SENHA
+  @Post('reset')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({
-    description: 'Recovery Pass',
-    examples: {
-      exemplo1: {
-        value: {
-          email: 'string',
-        },
-      },
+    schema: {
+      properties: { token: { type: 'string' }, novaSenha: { type: 'string' } },
     },
   })
-  recoveryPass(@Body() data: RecoveryPasswordDto): Promise<any> {
-    const { email } = data;
-    return this.authenticationsService.recoveryPassword(email);
+  async resetPassword(
+    @Body('token') token: string,
+    @Body('novaSenha') novaSenha: string,
+  ) {
+    await this.authService.resetPassword(token, novaSenha);
+  }
+
+  // 🔐 ATIVAR/DESATIVAR 2FA
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa')
+  @ApiBearerAuth()
+  @ApiBody({ type: Enable2FADto })
+  async toggle2FA(@CurrentUser() user: User, @Body() dto: Enable2FADto) {
+    return await this.authService.toggle2FA(user.id, dto.ativar);
+  }
+
+  // 🔐 VERIFICAR 2FA
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/verify')
+  @ApiBearerAuth()
+  @ApiBody({
+    schema: { properties: { codigo: { type: 'string', example: '123456' } } },
+  })
+  async verify2FA(@CurrentUser() user: User, @Body('codigo') codigo: string) {
+    const valido = await this.authService.verificar2FA(user.id, codigo);
+    if (!valido) throw new NotFoundException('Código inválido ou expirado');
+    return { success: true };
+  }
+
+  // 🔍 PERFIL
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  @ApiBearerAuth()
+  getProfile(@CurrentUser() user: User) {
+    return user;
+  }
+
+  @Post('signup')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Usuário criado com sucesso',
+  })
+  async signup(@Body() dto: SignupDto) {
+    // Define nível padrão (ex: usuário comum)
+    const userDto = { ...dto, nivel: 1 };
+
+    const user = await this.usersService.create(userDto);
+
+    // Gera token de verificação
+    await this.authRepo.update(user.id, { email_verificado: false });
+
+    // Envia email de verificação
+    await this.mailService.sendVerificationEmail(user.email, user.id);
+
+    return { message: 'Usuário criado. Verifique seu email.' };
+  }
+
+  @Get('verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Query('userId') userId: string) {
+    const auth = await this.authRepo.findOne({ where: { user_id: userId } });
+    if (!auth) throw new NotFoundException('Usuário não encontrado');
+
+    auth.email_verificado = true;
+    await this.authRepo.save(auth);
+
+    return { message: 'Email verificado com sucesso!' };
   }
 }

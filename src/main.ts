@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+// import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,7 +12,9 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-
+  // app.useGlobalPipes(
+  //   new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+  // );
   // 3. Configura o WebSocket (Socket.IO)
   app.useWebSocketAdapter(new IoAdapter(app));
 
@@ -27,7 +30,7 @@ async function bootstrap() {
          experiência dos clientes.`,
     )
     .setVersion('1.0')
-
+    .addBearerAuth()
     .build();
 
   const documentFactory = () =>

@@ -1,80 +1,89 @@
-// src/corporation/dto/create-corporation.dto.ts
-import { IsString, IsOptional, IsEmail, IsNotEmpty } from 'class-validator';
+// dto/create-corporation.dto.ts
+import {
+  IsString,
+  Length,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+  IsPostalCode,
+  IsEmail,
+  IsObject,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateCorporationProfileDto } from './create-corporation-profile.dto';
 
 export class CreateCorporationDto {
-  @IsString({ message: 'O CNPJ deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'O CNPJ é obrigatório.' })
+  @IsString()
+  @Length(14, 14)
   cnpj: string;
 
-  @IsString({ message: 'A razão social deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'A razão social é obrigatória.' })
+  @IsString()
+  @Length(2, 255)
   razao_social: string;
 
-  @IsString({ message: 'A natureza jurídica deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'A natureza jurídica é obrigatória.' })
-  natureza_juridica: string;
-
-  @IsString({ message: 'O nome fantasia deve ser uma string válida.' })
+  @IsString()
+  @Length(2, 255)
   @IsOptional()
-  nome_fantasia: string;
+  nome_fantasia?: string;
 
-  @IsString({ message: 'A data de início deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'A data de início da atividade é obrigatória.' })
+  @IsString()
   data_inicio_atividade: string;
 
-  @IsString({ message: 'O CNAE fiscal deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'O CNAE fiscal principal é obrigatório.' })
+  @IsString()
+  @Length(7, 7)
   cnae_fiscal_principal: string;
 
-  @IsString({ message: 'O telefone deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'O telefone é obrigatório.' })
+  @IsString()
+  @Length(2, 50)
+  tipo: string;
+
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsString()
+  @Length(10, 20)
   telefone: string;
 
-  @IsEmail({}, { message: 'O e-mail deve ser um endereço válido.' })
-  @IsNotEmpty({ message: 'O e-mail é obrigatório.' })
+  @IsEmail()
   email: string;
 
-  @IsString({ message: 'O CEP deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'O CEP é obrigatório.' })
+  @IsPostalCode('BR')
   cep: string;
 
-  @IsString({ message: 'O endereço deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'O endereço é obrigatório.' })
+  @IsString()
+  @Length(5, 255)
   endereco: string;
 
-  @IsString({ message: 'O endereço deve ser uma string válida.' })
+  @IsString()
   @IsOptional()
-  numero: string;
+  numero?: string;
 
-  @IsString({ message: 'O endereço deve ser uma string válida.' })
+  @IsString()
   @IsOptional()
-  bairro: string;
+  bairro?: string;
 
-  @IsString({ message: 'A cidade deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'A cidade é obrigatória.' })
+  @IsString()
+  @Length(2, 100)
   cidade: string;
 
-  @IsString({ message: 'O estado deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'O estado é obrigatório.' })
+  @IsString()
+  @Length(2, 2)
   estado: string;
 
-  @IsString({ message: 'O país deve ser uma string válida.' })
-  @IsNotEmpty({ message: 'O país é obrigatório.' })
-  pais: string;
-
-  @IsString()
-  @IsNotEmpty()
-  localizacao: string;
-
-  @IsString()
-  @IsNotEmpty()
-  tipo: 'T' | 'P';
-
   @IsString()
   @IsOptional()
-  tags: string;
+  pais?: string;
 
-  // Validação para garantir que apenas uma das opções seja preenchida
+  @IsObject()
   @IsOptional()
-  logo_url: string;
+  localizacao?: {
+    x: number; // longitude
+    y: number; // latitude
+  };
+  @ValidateNested()
+  @Type(() => CreateCorporationProfileDto)
+  @IsOptional()
+  profile?: CreateCorporationProfileDto;
 }

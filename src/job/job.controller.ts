@@ -1,147 +1,173 @@
+// src/jobs/jobs.controller.ts
 import {
   Controller,
   Get,
   Post,
-  Body,
-  Patch,
-  Param,
+  Put,
   Delete,
+  Param,
+  Body,
+  Query,
   UsePipes,
   ValidationPipe,
-  Query,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { JobService } from './job.service';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiQuery,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { JobResponseDto } from './dto/job-response.dto';
 
+import { User } from '../users/entities/user.entity';
+
+import { Job } from './entities/job.entity';
+import { CurrentUser } from 'src/authentications/sevices/current-user.decorator';
+import { JobsService } from './job.service';
+import { JwtAuthGuard } from 'src/authentications/sevices/jwt-guard.guad';
+
+@ApiTags('Jobs')
 @Controller('jobs')
 export class JobsController {
-  constructor(private readonly jobsService: JobService) {}
+  constructor(private readonly jobsService: JobsService) {}
 
+  // 🟢 CREATE
   @Post()
-  @UsePipes(new ValidationPipe())
-  @ApiOperation({ summary: 'Criar um novo job' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Criar um novo serviço (job)' })
   @ApiBody({ type: CreateJobDto })
-  create(@Body() createJobDto: CreateJobDto) {
-    return this.jobsService.create(createJobDto);
+  @ApiResponse({ status: HttpStatus.CREATED, type: JobResponseDto })
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @HttpCode(HttpStatus.CREATED)
+  async create(
+    @Body() createDto: CreateJobDto,
+    @CurrentUser() user: User,
+  ): Promise<JobResponseDto> {
+    const job = await this.jobsService.create(createDto, user.corp_id);
+    return this.toResponseDto(job);
   }
 
+  // 🔍 FIND ALL
   @Get()
-  @ApiOperation({ summary: 'Listar todos os jobs' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  findAll(@Query() query: { page?: string; limit?: string }) {
-    return this.jobsService.findAll({
-      page: Number(query.page),
-      limit: Number(query.limit),
-    });
+  @ApiOperation({ summary: 'Listar todos os serviços publicados' })
+  @ApiResponse({ status: HttpStatus.OK, type: [JobResponseDto] })
+  async findAll(): Promise<JobResponseDto[]> {
+    const jobs = await this.jobsService.findAll();
+    return jobs.map((job) => this.toResponseDto(job));
   }
 
-  @Get('allJobFilter')
-  @ApiOperation({ summary: 'Listar todos os jobs' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'orderBy', required: false, type: String })
-  @ApiQuery({ name: 'min_valor', required: false, type: Number })
-  @ApiQuery({ name: 'max_valor', required: false, type: Number })
-  @ApiQuery({ name: 'min_rating', required: false, type: Number })
-  @ApiQuery({ name: 'nome_servico', required: false, type: String })
-  @ApiQuery({ name: 'categoria', required: false, type: String })
-  @ApiQuery({ name: 'localizacao', required: false, type: String })
-  async findFiltered(
-    @Query()
-    filters: {
-      nome_servico?: string;
-      categoria?: string;
-      localizacao?: string;
-      min_valor?: number;
-      max_valor?: number;
-      min_rating?: number;
-      orderBy?: 'relevance' | 'rating' | 'price-asc' | 'price-desc';
-      page: number;
-      limit: number;
-    },
-  ) {
-    const query = {
-      ...filters,
-      page: Number(filters.page),
-      limit: Number(filters.limit),
-      min_rating: Number(filters.min_rating),
-      min_valor: Number(filters.min_valor),
-      max_valor: Number(filters.max_valor),
-    };
-
-    return await this.jobsService.findFiltered(query);
+  // 🔍 BY CORPORATION
+  @Get('mine')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Listar meus serviços' })
+  async findAllByCorporation(
+    @CurrentUser() user: User,
+  ): Promise<JobResponseDto[]> {
+    const jobs = await this.jobsService.findAllByCorporation(user.corp_id);
+    return jobs.map((job) => this.toResponseDto(job));
   }
 
+  // 🔍 BY ID
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.jobsService.findOne(id);
+  @ApiOperation({ summary: 'Obter serviço por ID' })
+  @ApiParam({ name: 'id' })
+  @ApiResponse({ status: HttpStatus.OK, type: JobResponseDto })
+  async findOne(@Param('id') id: string): Promise<JobResponseDto> {
+    const job = await this.jobsService.findOne(id);
+    return this.toResponseDto(job);
   }
 
-  @Get('corp/:corpId')
-  @ApiOperation({ summary: 'Listar todos os jobs de uma empresa' })
-  @ApiParam({ name: 'corpId', required: true, type: String })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  findForCorporation(
-    @Param('corpId') corpId: string,
-    @Query() query: { page?: string; limit?: string },
-  ) {
-    const { page, limit } = query;
-    return this.jobsService.findForCorporation(
-      corpId,
-      Number(page),
-      Number(limit),
-    );
+  // 🔍 BY CATEGORY
+  @Get('category/:categoria')
+  @ApiOperation({ summary: 'Buscar serviços por categoria' })
+  @ApiParam({ name: 'categoria' })
+  async findByCategory(
+    @Param('categoria') categoria: string,
+  ): Promise<JobResponseDto[]> {
+    const jobs = await this.jobsService.findByCategory(categoria);
+    return jobs.map((job) => this.toResponseDto(job));
   }
 
-  @Get('corpfilter/:corpId')
-  @ApiOperation({ summary: 'Listar todos os jobs de uma empresa' })
-  @ApiParam({ name: 'corpId', required: true, type: String })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'orderBy', required: false, type: String })
-  @ApiQuery({ name: 'min_valor', required: false, type: Number })
-  @ApiQuery({ name: 'max_valor', required: false, type: Number })
-  @ApiQuery({ name: 'min_rating', required: false, type: Number })
-  @ApiQuery({ name: 'nome_servico', required: false, type: String })
-  @ApiQuery({ name: 'categoria', required: false, type: String })
-  @ApiQuery({ name: 'localizacao', required: false, type: String })
-  async findFilteredForCorp(
-    @Param('corpId') corpId: string,
-    @Query()
-    filters: {
-      nome_servico?: string;
-      categoria?: string;
-      localizacao?: string;
-      min_valor?: number;
-      max_valor?: number;
-      min_rating?: number;
-      orderBy?: 'relevance' | 'rating' | 'price-asc' | 'price-desc';
-      page: number;
-      limit: number;
-    },
-  ) {
-    const query = {
-      ...filters,
-      page: Number(filters.page),
-      limit: Number(filters.limit),
-      min_rating: Number(filters.min_rating),
-      min_valor: Number(filters.min_valor),
-      max_valor: Number(filters.max_valor),
-    };
-    return await this.jobsService.findFilteredForCorp(corpId, query);
+  // 🔍 BY LOCATION
+  @Get('location')
+  @ApiOperation({ summary: 'Buscar serviços por cidade e estado' })
+  @ApiQuery({ name: 'cidade' })
+  @ApiQuery({ name: 'estado' })
+  async findByLocation(
+    @Query('cidade') cidade: string,
+    @Query('estado') estado: string,
+  ): Promise<JobResponseDto[]> {
+    const jobs = await this.jobsService.findByLocation(cidade, estado);
+    return jobs.map((job) => this.toResponseDto(job));
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
-    return this.jobsService.update(id, updateJobDto);
+  // 🟡 UPDATE
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Atualizar serviço' })
+  @ApiParam({ name: 'id' })
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async update(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateJobDto,
+    @CurrentUser() user: User,
+  ): Promise<JobResponseDto> {
+    const job = await this.jobsService.update(id, updateDto, user.corp_id);
+    return this.toResponseDto(job);
   }
 
+  // 🔴 DELETE
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.jobsService.remove(id);
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Remover serviço' })
+  @ApiParam({ name: 'id' })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    return await this.jobsService.remove(id, user.corp_id);
+  }
+
+  // ✅ Conversão para DTO
+  private toResponseDto(job: Job): JobResponseDto {
+    return {
+      id: job.id,
+      nome_servico: job.nome_servico,
+      categoria: job.categoria,
+      sub_categoria: job.sub_categoria,
+      descricao: job.descricao,
+      min_valor: job.min_valor,
+      max_valor: job.max_valor,
+      views: job.views,
+      total_views: job.total_views,
+      video_url: job.video_url,
+      certificacoes: job.certificacoes,
+      disponibilidade: job.disponibilidade,
+      publicado: job.publicado,
+      fotos:
+        job.fotos?.map((foto) => ({
+          id: foto.id,
+          photo_url: foto.photo_url,
+          photo_alt: foto.photo_alt,
+          created_at: foto.created_at,
+        })) || [],
+      corp_id: job.corp_id,
+      created_at: job.created_at,
+      updated_at: job.updated_at,
+    };
   }
 }

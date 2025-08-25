@@ -1,31 +1,35 @@
+import { Authentication } from 'src/authentications/entities/authentication.entity';
 import { Corporation } from 'src/corporations/entities/corporation.entity';
 import { BaseEntity } from 'src/database/entities/baseEntity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 
-@Entity()
+@Entity('user')
 export class User extends BaseEntity {
-  @Column({ nullable: true })
-  avatar_url: string;
-
-  @Column()
+  @Column({ type: 'varchar', length: 100 })
   nome: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
-  @Column()
-  senha: string;
+  @Column({ type: 'text' }) // armazena hash
+  hash_senha: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 20 })
   telefone: string;
 
-  @Column()
+  @Column({ type: 'text', nullable: true })
+  avatar_url: string;
+
+  @Column({ type: 'integer' })
   nivel: number;
 
-  @Column()
-  corpId: string;
+  @Column({ type: 'uuid' })
+  corp_id: string;
 
-  @ManyToOne(() => Corporation, (corp) => corp.users)
-  @JoinColumn({ name: 'corpId' })
-  corp: Corporation;
+  @ManyToOne(() => Corporation, (corporation) => corporation.users)
+  corporation: Corporation;
+
+  @OneToOne(() => Authentication, { cascade: true })
+  @JoinColumn({ name: 'id' }) // user.id = authentication.user_id
+  authentication: Authentication;
 }
