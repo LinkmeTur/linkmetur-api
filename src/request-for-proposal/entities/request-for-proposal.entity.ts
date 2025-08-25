@@ -1,17 +1,18 @@
-import { BaseEntity } from 'src/database/entities/baseEntity';
-import { Proposal } from 'src/proposal/entities/proposal.entity';
+// src/request-for-proposal/entities/request-for-proposal.entity.ts
 import {
-  Column,
   Entity,
-  JoinColumn,
+  Column,
   ManyToOne,
-  OneToMany,
   OneToOne,
+  OneToMany,
+  JoinColumn,
 } from 'typeorm';
-import { RequestPhotos } from './request-photos.entity';
-import { Request } from 'src/request/entities/request.entity';
+import { BaseEntity } from 'src/database/entities/baseEntity';
 import { Corporation } from '../../corporations/entities/corporation.entity';
-import { Job } from 'src/job/entities/job.entity';
+import { Job } from '../../job/entities/job.entity';
+import { Proposal } from '../../proposal/entities/proposal.entity';
+import { Request } from '../../request/entities/request.entity';
+import { RequestPhotos } from './request-photos.entity';
 
 @Entity('request_for_proposal')
 export class RequestForProposal extends BaseEntity {
@@ -24,14 +25,17 @@ export class RequestForProposal extends BaseEntity {
   @Column({ type: 'uuid', nullable: true })
   job_id: string;
 
+  // Contratante
   @ManyToOne(() => Corporation, (corp) => corp.rfps)
   @JoinColumn({ name: 'corp_id' })
   corporation: Corporation;
 
+  // Prestador (opcional — pode ser aberto)
   @ManyToOne(() => Corporation, { nullable: true })
   @JoinColumn({ name: 'prestador_id' })
   prestador: Corporation;
 
+  // Serviço base (opcional)
   @ManyToOne(() => Job, { nullable: true })
   @JoinColumn({ name: 'job_id' })
   job: Job;
@@ -49,21 +53,26 @@ export class RequestForProposal extends BaseEntity {
   valor_medio: number;
 
   @Column({ type: 'varchar', length: 50 })
-  tipo: string;
+  tipo: string; // 'aberto', 'fechado', 'direcionado'
 
   @Column({ type: 'timestamptz', nullable: true })
   prazo: Date;
 
   @Column({ type: 'varchar', length: 20 })
-  status: string; // 'aberto', 'encerrado', etc
+  status: string; // 'aberto', 'encerrado', 'cancelado'
 
-  @OneToMany(() => Proposal, (proposal) => proposal.rfp)
+  // Propostas enviadas por prestadores
+  @OneToMany(() => Proposal, (proposal) => proposal.rfp, { cascade: true })
   proposals: Proposal[];
 
-  @OneToOne(() => Request, (request) => request.rfp)
+  // Pedido gerado ao aceitar uma proposta
+  @OneToOne(() => Request, (request) => request.rfp, {
+    cascade: true,
+    nullable: true,
+  })
   request: Request;
 
-  @OneToMany(() => RequestPhotos, (photo) => photo.rfp)
-  @JoinColumn({ name: 'rfp_id' })
+  // Fotos do projeto
+  @OneToMany(() => RequestPhotos, (photo) => photo.rfp, { cascade: true })
   fotos: RequestPhotos[];
 }

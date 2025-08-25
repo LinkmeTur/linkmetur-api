@@ -1,38 +1,48 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { RequestPhotosDto } from './request-photos.dto';
-import { CreateProposalDto } from 'src/proposal/dto/create-proposal.dto';
+// src/request-for-proposal/dto/create-rfp.dto.ts
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsDate,
+  IsEnum,
+  ValidateNested,
+  IsArray,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateRequestPhotoDto } from './create-request-photo.dto';
 
-export class CreateRequestForProposalDto {
-  @IsNotEmpty()
-  @IsString()
-  corpID: string;
-
-  @IsString()
-  prestadorID: string;
-
-  @IsNotEmpty()
+export class CreateRfpDto {
   @IsString()
   titulo: string;
 
-  @IsNotEmpty()
   @IsString()
   descricao: string;
 
-  @IsOptional()
   @IsString()
   detalhes: string;
 
-  @IsOptional()
-  @IsString()
-  valor_medio: string;
+  @IsNumber()
+  valor_medio: number;
 
-  @IsOptional()
   @IsString()
+  @IsEnum(['aberto', 'fechado', 'direcionado'])
   tipo: string;
 
   @IsOptional()
-  fotos: RequestPhotosDto[];
+  @IsDate()
+  prazo?: Date;
 
   @IsOptional()
-  proposals: CreateProposalDto[];
+  @IsString()
+  job_id?: string;
+
+  @IsOptional()
+  @IsString()
+  prestador_id?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateRequestPhotoDto)
+  @IsOptional()
+  fotos?: CreateRequestPhotoDto[];
 }

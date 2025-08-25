@@ -1,11 +1,12 @@
-import { Corporation } from 'src/corporations/entities/corporation.entity';
+// src/request/entities/request.entity.ts
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from 'src/database/entities/baseEntity';
-import { Job } from 'src/job/entities/job.entity';
-import { Proposal } from 'src/proposal/entities/proposal.entity';
 import { RequestForProposal } from 'src/request-for-proposal/entities/request-for-proposal.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Proposal } from 'src/proposal/entities/proposal.entity';
+import { Job } from 'src/job/entities/job.entity';
+import { Corporation } from 'src/corporations/entities/corporation.entity';
 
-@Entity()
+@Entity('request')
 export class Request extends BaseEntity {
   @Column({ type: 'uuid' })
   rfp_id: string;
@@ -34,13 +35,15 @@ export class Request extends BaseEntity {
   @JoinColumn({ name: 'job_id' })
   job: Job;
 
+  // Empresa contratante
   @ManyToOne(() => Corporation)
   @JoinColumn({ name: 'corp_id' })
   corporation: Corporation;
 
+  // Prestador (usuário que enviou a proposta)
   @ManyToOne(() => Corporation)
   @JoinColumn({ name: 'user_id' })
-  user: Corporation;
+  prestador: Corporation;
 
   @Column({ type: 'varchar', length: 255 })
   nome_job: string;

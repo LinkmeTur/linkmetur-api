@@ -1,55 +1,37 @@
-// dto/create-proposal.dto.ts
+// src/proposal/dto/create-proposal.dto.ts
 import {
   IsString,
-  IsUUID,
-  IsDecimal,
+  IsNumber,
   IsOptional,
   IsDate,
-  IsBoolean,
   ValidateNested,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateProposalPhotosDto } from './proposal-photos.dto';
+import { CreateProposalPhotoDto } from './create-proposal-photo.dto';
 
 export class CreateProposalDto {
   @IsString()
-  @IsUUID()
   rfp_id: string;
-
-  @IsString()
-  @IsUUID()
-  corp_id: string;
-
-  @IsString()
-  @IsUUID()
-  @IsOptional()
-  user_id?: string;
 
   @IsString()
   @IsOptional()
   resumo_proposta?: string;
 
-  @IsDecimal({ decimal_digits: '2' })
+  @IsNumber()
   valor_proposta: number;
 
   @IsString()
   @IsOptional()
   observacoes?: string;
 
-  @IsDate()
   @IsOptional()
+  @IsDate()
   prazo?: Date;
 
-  @IsString()
-  @IsOptional()
-  status?: string; // 'enviada'
-
-  @IsBoolean()
-  @IsOptional()
-  selecionado?: boolean;
-
+  @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateProposalPhotosDto)
+  @Type(() => CreateProposalPhotoDto)
   @IsOptional()
-  fotos?: CreateProposalPhotosDto[];
+  fotos?: CreateProposalPhotoDto[];
 }
