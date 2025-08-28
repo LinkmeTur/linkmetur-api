@@ -59,4 +59,28 @@ export class MailService {
       `,
     });
   }
+
+  async sendNotificationEmail(
+    to: string,
+    notification: {
+      titulo: string;
+      mensagem: string;
+      link?: string;
+    },
+  ) {
+    const html = `
+      <h2>${notification.titulo}</h2>
+      <p>${notification.mensagem}</p>
+      ${notification.link ? `<a href="${notification.link}" target="_blank">Ver detalhes</a>` : ''}
+      <br><br>
+      <small>Este é um email automático. Não responda.</small>
+    `;
+
+    await this.transporter.sendMail({
+      from: this.configService.get('MAIL_FROM'),
+      to,
+      subject: notification.titulo,
+      html,
+    });
+  }
 }

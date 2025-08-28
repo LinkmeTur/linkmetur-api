@@ -12,6 +12,7 @@ import { CreateProposalDto } from './dto/create-proposal.dto';
 import { UpdateProposalDto } from './dto/update-proposal.dto';
 import { RequestForProposal } from '../request-for-proposal/entities/request-for-proposal.entity';
 import { Corporation } from '../corporations/entities/corporation.entity';
+import { NotificationsService } from '../notification/notification.service';
 
 @Injectable()
 export class ProposalService {
@@ -24,6 +25,7 @@ export class ProposalService {
     private readonly rfpRepo: Repository<RequestForProposal>,
     @InjectRepository(Corporation)
     private readonly corpRepo: Repository<Corporation>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(
@@ -61,6 +63,15 @@ export class ProposalService {
       status: 'enviada',
       selecionado: false,
     });
+
+    await this.notificationsService.createForCorporation(
+      rfp.corp_id,
+      'Nova Proposta Recebida',
+      `A empresa ${corporation.razao_social} enviou uma proposta para "${rfp.titulo}".`,
+      'proposta',
+      `/proposals/${proposal.id}`,
+      { proposal_id: proposal.id, rfp_id: rfp.id },
+    );
 
     return await this.proposalRepo.save(proposal);
   }

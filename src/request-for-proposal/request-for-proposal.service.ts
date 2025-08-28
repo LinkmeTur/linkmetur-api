@@ -12,6 +12,7 @@ import { Corporation } from 'src/corporations/entities/corporation.entity';
 import { Job } from 'src/job/entities/job.entity';
 import { CreateRfpDto } from './dto/create-request-for-proposal.dto';
 import { UpdateRequestForProposalDto } from './dto/update-request-for-proposal.dto';
+import { NotificationsService } from 'src/notification/notification.service';
 
 @Injectable()
 export class RequestForProposalService {
@@ -24,6 +25,7 @@ export class RequestForProposalService {
     private readonly corpRepo: Repository<Corporation>,
     @InjectRepository(Job)
     private readonly jobRepo: Repository<Job>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(
@@ -68,6 +70,14 @@ export class RequestForProposalService {
     };
 
     const rfp = this.rfpRepo.create(newRfp);
+    await this.notificationsService.createForCorporation(
+      createDto.prestador_id ?? '',
+      'Novo Serviço Disponível',
+      `Um novo serviço "${createDto.titulo}" foi publicado.`,
+      'novo_servico',
+      `/rfps/${rfp.id}`,
+      { job_id: createDto.job_id },
+    );
 
     return await this.rfpRepo.save(rfp);
   }

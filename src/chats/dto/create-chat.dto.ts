@@ -1,12 +1,40 @@
-import { IsString, IsUUID } from 'class-validator';
+// src/chat/dto/create-chat.dto.ts
+import { IsString, IsUUID, IsOptional, IsUrl } from 'class-validator';
 
 export class CreateChatDto {
-  @IsUUID()
-  remetenteId: string;
-  @IsUUID()
-  destinatarioId: string;
   @IsString()
-  conteudo: string;
+  @IsUUID()
+  destinatario_id: string;
+
   @IsString()
-  remetenteNome: string;
+  @IsUUID()
+  remetente_id: string;
+
+  @IsString()
+  @IsOptional()
+  conteudo?: string;
+
+  @IsUrl()
+  @IsOptional()
+  photo_url?: string;
+
+  @IsString()
+  @IsOptional()
+  photo_alt?: string;
+
+  @IsOptional()
+  @IsUUID()
+  request_id?: string;
+
+  @IsOptional()
+  @IsUUID()
+  rfp_id?: string;
+
+  @IsOptional()
+  @IsUUID()
+  job_id?: string;
+
+  @IsOptional()
+  @IsString()
+  iv?: string;
 }
