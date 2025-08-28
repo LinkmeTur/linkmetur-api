@@ -12,10 +12,13 @@ import { LoginDto } from './dto/login.dto';
 import { User } from 'src/users/entities/user.entity';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'node:crypto';
+import { SignupDto } from './dto/signup.dto';
+import { MailService } from 'src/mail/mail.service';
 @Injectable()
 export class AuthenticationsService {
   constructor(
     private readonly usersService: UsersService,
+    private readonly mailService: MailService,
     private readonly jwtService: JwtService,
     @InjectRepository(Authentication)
     private readonly authRepo: Repository<Authentication>,
@@ -145,6 +148,31 @@ export class AuthenticationsService {
     }
 
     return valido;
+  }
+
+  async signup(dto: SignupDto) {
+    // Define nível padrão (ex: usuário comum)
+    const userDto = { ...dto, nivel: 1 };
+
+    const user = await this.usersService.create(userDto);
+
+    // Gera token de verificação
+    await this.authRepo.update(user.id, { email_verificado: false });
+
+    // Envia email de verificação
+    await this.mailService.sendVerificationEmail(user.email, user.id);
+
+    return { message: 'Usuário criado. Verifique seu email.' };
+  }
+
+  async verifyEmail(userId: string) {
+    const auth = await this.authRepo.findOne({ where: { user_id: userId } });
+    if (!auth) throw new NotFoundException('Usuário não encontrado');
+
+    auth.email_verificado = true;
+    await this.authRepo.save(auth);
+
+    return { message: 'Email verificado com sucesso!' };
   }
 
   private gerarCodigo2FA(): string {

@@ -98,29 +98,12 @@ export class AuthenticationsController {
     description: 'Usuário criado com sucesso',
   })
   async signup(@Body() dto: SignupDto) {
-    // Define nível padrão (ex: usuário comum)
-    const userDto = { ...dto, nivel: 1 };
-
-    const user = await this.usersService.create(userDto);
-
-    // Gera token de verificação
-    await this.authRepo.update(user.id, { email_verificado: false });
-
-    // Envia email de verificação
-    await this.mailService.sendVerificationEmail(user.email, user.id);
-
-    return { message: 'Usuário criado. Verifique seu email.' };
+    return await this.authService.signup(dto);
   }
 
   @Get('verify-email')
   @HttpCode(HttpStatus.OK)
   async verifyEmail(@Query('userId') userId: string) {
-    const auth = await this.authRepo.findOne({ where: { user_id: userId } });
-    if (!auth) throw new NotFoundException('Usuário não encontrado');
-
-    auth.email_verificado = true;
-    await this.authRepo.save(auth);
-
-    return { message: 'Email verificado com sucesso!' };
+    return await this.authService.verifyEmail(userId);
   }
 }

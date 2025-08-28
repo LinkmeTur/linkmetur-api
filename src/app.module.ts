@@ -8,16 +8,18 @@ import * as redisStore from 'cache-manager-ioredis';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CorporationsModule } from './corporations/corporations.module';
-// import { AuthenticationsModule } from './authentications/authentications.module';
-// import { ChatsModule } from './chats/chats.module';
-// import { JobModule } from './job/job.module';
-// import { ContactsModule } from './contacts/contacts.module';
-// import { RequestForProposalModule } from './request-for-proposal/request-for-proposal.module';
-// import { ProposalModule } from './proposal/proposal.module';
 
-// import { RequestModule } from './request/request.module';
-// import { NotificationModule } from './notification/notification.module';
 import { DatabaseModule } from './database/database.module';
+import { UsersModule } from './users/users.module';
+import { AuthenticationsModule } from './authentications/authentications.module';
+import { JobModule } from './job/job.module';
+import { ChatsModule } from './chats/chats.module';
+import { SupportModule } from './support/support.module';
+import { ContactsModule } from './contacts/contacts.module';
+import { RequestForProposalModule } from './request-for-proposal/request-for-proposal.module';
+import { ProposalModule } from './proposal/proposal.module';
+import { RequestModule } from './request/request.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -63,25 +65,27 @@ import { DatabaseModule } from './database/database.module';
     }),
 
     // Módulos da aplicação
-    // UsersModule,
+    UsersModule,
 
     CorporationsModule,
 
-    // AuthenticationsModule,
+    AuthenticationsModule,
 
-    // JobModule,
+    JobModule,
 
-    // ChatsModule,
+    ChatsModule,
 
-    // ContactsModule,
+    SupportModule,
 
-    // RequestForProposalModule,
+    ContactsModule,
 
-    // ProposalModule,
+    RequestForProposalModule,
 
-    // RequestModule,
+    ProposalModule,
 
-    // NotificationModule,
+    RequestModule,
+
+    NotificationModule,
 
     DatabaseModule,
   ],
