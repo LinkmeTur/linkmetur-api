@@ -12,4 +12,4 @@ import { NotificationsService } from './notification.service';
   providers: [NotificationsService, JwtAuthGuard],
   exports: [NotificationsService, TypeOrmModule],
 })
-export class NotificationModule {}
+export class NotificationsModule {}

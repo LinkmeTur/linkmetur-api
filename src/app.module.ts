@@ -19,7 +19,8 @@ import { ContactsModule } from './contacts/contacts.module';
 import { RequestForProposalModule } from './request-for-proposal/request-for-proposal.module';
 import { ProposalModule } from './proposal/proposal.module';
 import { RequestModule } from './request/request.module';
-import { NotificationModule } from './notification/notification.module';
+import { NotificationsModule } from './notification/notification.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -85,7 +86,9 @@ import { NotificationModule } from './notification/notification.module';
 
     RequestModule,
 
-    NotificationModule,
+    NotificationsModule,
+
+    MailModule,
 
     DatabaseModule,
   ],
